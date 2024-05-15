@@ -1,0 +1,184 @@
+\documentclass[letterpaper,12pt,notitlepage,twoside]{report}
+
+\newcommand{\watermark}{hello there}
+\newcommand{\booktopic}{MLOps}
+\newcommand{\lastname}{Chuks Okoli}
+\usepackage{NoteStyle}
+
+\title{Machine Learning Operations}
+\author{Chuks Okoli}
+\date{\footnotesize Last Updated: \today}
+
+\hypersetup{
+  pdftitle={Machine Learning Operations},
+  pdfauthor={Chuks Okoli},
+  pdfsubject={},
+}
+
+% ToC on the title page:
+% https://tex.stackexchange.com/a/45863
+\makeatletter
+\newcommand*{\toccontents}{\@starttoc{toc}}
+\makeatother
+
+\begin{document}
+
+\begin{titlepage}
+  \pagestyle{plain}
+  \maketitle
+  \setcounter{tocdepth}{2}
+
+  \pdfbookmark[section]{\contentsname}{toc}
+  \toccontents
+  % Separate page:
+  % \tableofcontents
+\end{titlepage}
+
+\chapter{Introduction} \label{ch:1}
+\inspiration{Imagine you have a magic cookbook that can teach you how to make the best cookies ever. But it's not just any cookbook, it's a special one that learns and gets better every time you make cookies.
+
+Now, making cookies is a bit like solving a puzzle. You need the right ingredients (like flour, sugar, and chocolate chips) and you need to mix them together in just the right way. Sometimes, you might make a mistake and your cookies don't turn out quite right.
+
+That's where MLOps comes in! MLOps is like having a team of helpful fairies who watch over you while you're baking. They make sure you're using the right ingredients, they help you mix everything together perfectly, and they even give you tips on how to make your cookies even better next time.
+
+So, with MLOps, you can keep making cookies and your magic cookbook will keep learning from each batch. And before you know it, you'll be making the most delicious cookies anyone has ever tasted!}{Author}{Optional Source}
+
+\firstletter{Hello there}, and welcome to \booktopic. This work is a culmination of hours of effort to create my reference for machine learning operations. All of the explanations are in my own words but majority of the content are based on Alexey Grigorev's DataTalksClub \href{https://github.com/DataTalksClub/mlops-zoomcamp}{MLOps Zoomcamp course}.
+
+\section{What is MLOps?}
+MLOps is a set of best practices for putting machine learning models into production. The process for a machine learning project is:
+\begin{itemize}
+	\item Design - define if machine learning is the right tool for solving the problem
+	\item Train - train the model to find the best possible model
+	\item Operate - deploy the model,  and monitor degradation or quality of the model
+\end{itemize}
+MLOps is a set of practices for automating everything and working together as a team on a machine learning project.
+
+\section{Configuring Environment with GitHub Codespaces}
+
+
+
+\section{On Colorful Boxes}
+There are lots of different boxes you can make:
+%
+\begin{itemize}
+  \item Like this one,
+    \begin{notebox}
+      which is wrapped in gray. I use it for notes.\ldots
+    \end{notebox}
+
+  \item Or this one,
+    \begin{funfact}
+      which is wrapped in red. I use it for fun facts or other asides\ldots
+    \end{funfact}
+
+  \item Or this one,
+    \begin{mathaside}
+      which is wrapped in blue and used for mathy stuff.
+    \end{mathaside}
+
+  \item Or this last one,
+    \begin{example}
+      which is wrapped in green. With a title, it's used for enumerated examples
+      (see \smtt{\textbackslash extitle} and \smtt{\textbackslash excounter}).
+      Observe:
+    \end{example}
+
+    \begin{example}[frametitle=\extitle{Test}]
+      This is an example. What's the answer to $2+2$?
+      \answer{Obviously 4, lol.}
+    \end{example}
+
+    \begin{example}[frametitle=\extitle{Test Again}]
+      This one will increment the counter automatically, resetting for each
+      chapter.
+    \end{example}
+
+
+  \item For red and blue boxes, there are custom commands for titles, too:
+    \begin{mathaside}[frametitle=\mathtitle{One Title}]
+      Like this
+    \end{mathaside}
+    \begin{mathaside}[frametitle=\mathtitlep{Two Titles}{A Subtitle}]
+      Or this
+    \end{mathaside}
+\end{itemize}
+
+\hr{5in}
+
+These styles also automatically apply to theorems and claims.
+
+\begin{theorem}[Pythagorean Theorem]
+  \label{thm:pyth}
+  For any right triangle with legs $a,b$ and hypotenuse $c$:
+  %
+  \begin{equation}
+    \label{eq:pyth}
+    a^2+b^2=c^2
+  \end{equation}
+\end{theorem}
+\begin{proof}
+  This is left as an exercise to the reader.
+\end{proof}
+
+\begin{claim}
+  This is the greatest note template in the world.
+\end{claim}
+
+\hr{5in}
+
+There are different ways to quote things, too, depending on how you want to
+emphasize:
+
+\begin{quoting}
+  This is a simple, indented quote with small letters and italics usually
+  suitable for in-text quotations when you just want a block.
+\end{quoting}
+
+Alternatively, you can use the \smtt{\textbackslash inspiration} command from
+the chapter heading, which leverages the \smtt{thickleftborder} frame
+internally, but adds a little more padding and styling (there's also just
+\smtt{leftborder} for a thinner variant):
+
+\begin{thickleftborder}
+  Hello there!
+\end{thickleftborder}
+
+
+
+\section{On Cross-Referencing}
+\marginnote{\footnotesize\softtext This is the standard way to include margin
+notes. There are also commands to link to source papers directly (see
+\smtt{\textbackslash lesson}).} You can reference most things---see
+\autoref{thm:pyth} or \eqref{eq:pyth} or the \nameref{ch:1} chapter---directly
+and easily as long as you give them labels. These are ``built-ins.'' However,
+you can also create a \term{custom term} that will be included in the index,
+then include references to it that link back to the original definition. Try
+clicking: \refterm{custom term}. Building the index is on you, though. You can
+also reference by using a different term for the text: \reftermx{custom
+term}{like this}. Sometimes it doesn't fit the \termx{grammar}{grammatical
+structure} of the sentence so you can define the term one way and visualize it
+another way (this creates a \aterm{grammar} entry in the index). There's also
+\prop{math terms} and a way to reference them: \refprop{math terms} (clickable),
+but they do \textbf{not} show up in the index.
+
+
+
+\section{On Math}
+Most of the math stuff is just macros for specific things like the convolution
+operator, $\conv$, probabilities, $\cprob{A}{B=C}$, or big-$O$ notation,
+$\bigO{n^2\log{n}}$ but there's also a convenient way to include explanations on
+the side of an equation:
+%
+\begin{align*}
+  1 + 1 &\overset{?}{=} 2    \sideblock{2in}{first we do this} \\
+      2 &\overset{?}{=} 2    \sideblock{2in}{then we do this} \\
+      2 &= 2 \qed
+\end{align*}
+
+These are all in the \smtt{CustomCommands.sty} file.
+
+
+
+\end{document}
+
