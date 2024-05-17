@@ -214,6 +214,11 @@ docker run hello-world
       In this section, we use machine learning to predict the trip duration for trips in New York. The data used were collected from the \href{https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page}{NYC Taxi and Limousine Commission (TLC)}. This dataset contains yellow and green taxi trip records include fields capturing pick-up and drop-off dates/times, pick-up and drop-off locations, trip distances, itemized fares, rate types, payment types, and driver-reported passenger counts. The data is stored in the PARQUET format.  We built a simple linear regression model and save the model as a pickle file for subsequent use later one.  See the \href{https://github.com/chuksoo/mlops-zoomcamp-2024/blob/main/01%20-%20Intro/duration-prediction.ipynb}{duration prediction notebook}.
     \end{example}
 
+We can download parquet file using:
+\begin{lstlisting}[language=python, numbers=none]
+# download parquet data
+!wget https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2021-01.parquet
+\end{lstlisting}
 
 \section{On Colorful Boxes}
 There are lots of different boxes you can make:
