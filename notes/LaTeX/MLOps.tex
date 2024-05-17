@@ -1,6 +1,6 @@
 \documentclass[letterpaper,12pt,notitlepage,twoside]{report}
 
-\newcommand{\watermark}{hello there}
+\newcommand{\watermark}{MLOps}
 \newcommand{\booktopic}{Machine Learning Operations}
 \newcommand{\lastname}{Okoli}
 \usepackage{NoteStyle}
@@ -30,6 +30,12 @@
     showtabs=false,                  
     tabsize=2
 }
+
+% Prevents hypenation 
+\tolerance=1
+\emergencystretch=\maxdimen
+\hbadness=10000
+
 
 \lstset{style=mystyle}
 
@@ -219,6 +225,69 @@ We can download parquet file using:
 # download parquet data
 !wget https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2021-01.parquet
 \end{lstlisting}
+
+\section{MLOps Maturity Model}
+The MLOps maturity model helps clarify the Development Operations (DevOps) principles and practices necessary to run a successful MLOps environment.  The maturity is the extent to which MLOps is implemented in a team. The MLOps maturity model encompasses five levels of technical capability.
+
+% Please add the following required packages to your document preamble:
+\begin{table}[H]
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{cp{2.5cm}p{7.0cm}p{7.0cm}}
+\hline
+Level & Description                     & Highlights                                                                                                                                                                                                                                         & Technology                                                                                                                                                                                   \\ \hline \hline
+0     & No MLOps & \begin{itemize}[noitemsep, topsep=0pt]
+    \item Hard to manage lifecycle
+    \item Disparate teams
+    \item Systems as ``black boxes''
+\end{itemize}                 & \begin{itemize}[noitemsep, topsep=0pt]
+    \item Manual builds/deployments
+    \item Manual testing
+    \item No centralized tracking
+\end{itemize} \\ \hline
+1     & DevOps but no MLOps            & \begin{itemize}[noitemsep, topsep=0pt]
+   \item Less painful releases
+    \item Limited feedback
+    \item Hard to reproduce results
+\end{itemize}              & \begin{itemize}[noitemsep, topsep=0pt]
+    \item Automated builds
+    \item Automated tests for application code
+\end{itemize} \\ \hline
+2     & Automated Training              & \begin{itemize}[noitemsep, topsep=0pt]
+   \item Managed, traceable training
+    \item Easy to reproduce model
+    \item Low friction releases
+\end{itemize}                      & \begin{itemize}[noitemsep, topsep=0pt]
+    \item Automated model training
+    \item Centralized tracking of model training performance
+    \item Model management
+\end{itemize} \\ \hline
+3     & Automated Deployment     & \begin{itemize}[noitemsep, topsep=0pt]
+    \item Releases are low friction and automatic
+    \item Full traceability from deployment back to original data
+    \item Entire environment managed: train > test > production
+\end{itemize}                            & \begin{itemize}[noitemsep, topsep=0pt]
+   \item Integrated A/B testing
+    \item Automated tests for all code
+    \item Centralized tracking
+\end{itemize} \\ \hline
+4     & Full MLOps Automated Operations & \begin{itemize}[noitemsep, topsep=0pt]
+    \item Fully automated, monitored
+    \item Systems provide improvement information
+    \item Zero-downtime
+\end{itemize} & \begin{itemize}[noitemsep, topsep=0pt]
+    \item Automated training/testing
+    \item Centralized metrics
+\end{itemize}                                                              \\ \hline \hline
+\end{tabular}%
+}
+\caption{Machine Learning operations maturity model (culled from \href{https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/mlops-maturity-model}{Microsoft Blog}}
+\label{tab:my-table}
+\end{table}
+
+\chapter{Experiment Tracking and Model Management} \label{ch:2}
+\section{Introduction to Experiment Tracking}
+\section{Experiment tracking with MLflow}
+
 
 \section{On Colorful Boxes}
 There are lots of different boxes you can make:
