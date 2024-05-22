@@ -7,6 +7,8 @@
 \usepackage{placeins}
 \usepackage{listings}
 
+\definecolor{firebrick}{rgb}{0.7, 0.13, 0.13}
+
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
 \definecolor{codepurple}{rgb}{0.58,0,0.82}
@@ -288,12 +290,48 @@ Level & Description                     & Highlights                            
 \section{Introduction to Experiment Tracking}
 Machine Learning experiment is the process of building an ML model. Experiment run represents each trial in an ML experiment. A run artifact is any file associated with an ML run. The experiment metadata is all the information related to the experiment. \emph{Experiment tracking} is the process of keeping track of all the \textbf{relevant information} from an \textbf{ML experiment}, which includes:
 \begin{itemize}[noitemsep, topsep=0pt]
-	\item Design - define if machine learning is the right tool for solving the problem
-	\item Train - train the model to find the best possible model
-	\item Operate - deploy the model,  and monitor degradation or quality of the model
+	\item Source code
+	\item Environment
+	\item Data
+	\item Models
+	\item Hyperparameters
+	\item Metrics
 \end{itemize}
-\section{Experiment tracking with MLflow}
 
+    \begin{mathaside}[frametitle=\mathtitle{Why is Experiment Tracking \color{firebrick}{so important}}]
+      Experiment tracking is important because of \textbf{Reproducibility}, \textbf{Organization}, and \textbf{Optimization}
+    \end{mathaside}
+
+Experiment tracking is done using MLflow. MLflow is ``an open source platform for the machine learning lifecycle''. In practice, it's just a Python package that can be installed with pip, and it contains four main modules:
+\begin{itemize}[noitemsep, topsep=0pt]
+	\item Tracking
+	\item Models
+	\item Model Registry
+	\item Projects
+\end{itemize}
+
+The MLflow Tracking module allows you to organize your experiments into runs, and to keep track of:
+\begin{itemize}[noitemsep, topsep=0pt]
+	\item Parameters
+	\item Metrics
+	\item Metadata
+	\item Artifacts
+	\item Models
+\end{itemize}
+
+Along with this information, MLflow automatically logs extra information about the run:
+\begin{itemize}[noitemsep, topsep=0pt]
+	\item Source code i.e., the name of the file that was used to run the experiment
+	\item Version of the code (git commit)
+	\item Start and end time
+	\item Author
+\end{itemize}
+
+\section{Experiment tracking with MLflow}
+To start experiment tracking, we need to create a conda environment for tracking experiment and activate it.
+\begin{lstlisting}[language=python, numbers=none]
+conda create -n exp-tracking-env python=3.9
+\end{lstlisting}
 
 \section{On Colorful Boxes}
 There are lots of different boxes you can make:
