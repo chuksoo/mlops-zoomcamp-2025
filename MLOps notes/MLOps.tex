@@ -288,6 +288,11 @@ Level & Description                     & Highlights                            
 
 \chapter{Experiment Tracking and Model Management} \label{ch:2}
 \section{Introduction to Experiment Tracking}
+
+ \begin{funfact}[frametitle=\facttitlep{Fun Fact}{MLflow}]
+MLflow is an open-source platform that helps manage the end-to-end machine learning lifecycle. It provides a set of tools to streamline and automate various stages of the machine learning process, from experimentation to deployment. 
+\end{funfact}
+
 Machine Learning experiment is the process of building an ML model. Experiment run represents each trial in an ML experiment. A run artifact is any file associated with an ML run. The experiment metadata is all the information related to the experiment. \emph{Experiment tracking} is the process of keeping track of all the \textbf{relevant information} from an \textbf{ML experiment}, which includes:
 \begin{itemize}[noitemsep, topsep=0pt]
 	\item Source code
@@ -327,11 +332,89 @@ Along with this information, MLflow automatically logs extra information about t
 	\item Author
 \end{itemize}
 
+\subsection{How MLflow Helps Manage Machine Learning Experiments}
+Here are some key ways in which MLflow can help with machine learning experiments:
+\subsubsection{Experiment Tracking}
+MLflow Tracking allows you to log and query experiments using APIs or a web-based interface. Key features include:
+
+\begin{itemize}
+    \item \textbf{Log Parameters and Metrics:} Easily log hyperparameters, metrics, and artifacts (such as model files) for each run.
+    \item \textbf{Organize and Compare Runs:} Organize runs by experiments and compare results visually.
+    \item \textbf{Search and Query:} Search and filter experiments using a web UI or API, allowing you to quickly find runs with specific attributes.
+\end{itemize}
+
+\subsubsection{Reproducibility}
+MLflow promotes reproducibility of experiments by providing:
+
+\begin{itemize}
+    \item \textbf{Code Versioning:} Integrates with version control systems (like Git) to log the version of the code that produced a particular run.
+    \item \textbf{Environment Management:} Capture and reproduce the software environment using Conda environments or Docker images.
+    \item \textbf{Artifacts:} Store and retrieve artifacts such as datasets, models, and images, ensuring all elements of an experiment are preserved.
+\end{itemize}
+
+\subsubsection{Model Management}
+MLflow Models facilitate model packaging, sharing, and deployment:
+
+\begin{itemize}
+    \item \textbf{Standardized Format:} Save models in a standardized format that includes the model itself along with its dependencies and environment.
+    \item \textbf{Multi-Platform Support:} Export models to various formats (e.g., TensorFlow, PyTorch, scikit-learn) and deploy them to different environments (e.g., cloud services, Docker).
+    \item \textbf{Model Registry:} Register and version models, track model lineage, and transition models through stages (e.g., ``staging'', ``production'').
+\end{itemize}
+
+\subsubsection{Deployment}
+MLflow provides tools for deploying models to various platforms:
+
+\begin{itemize}
+    \item \textbf{Built-in Deployment Options:} Deploy models to cloud platforms like AWS SageMaker, Azure ML, and Google Cloud ML Engine.
+    \item \textbf{Custom Deployments:} Create custom deployment logic using the MLflow REST API or the command-line interface (CLI).
+    \item \textbf{Batch and Real-Time Serving:} Support for both batch and real-time serving of models, enabling various deployment scenarios.
+\end{itemize}
+
+\subsubsection{Collaboration}
+MLflow facilitates collaboration among team members by providing:
+
+\begin{itemize}
+    \item \textbf{Centralized Tracking Server:} A centralized tracking server where team members can log and view experiment runs.
+    \item \textbf{Sharing and Collaboration:} Share results, models, and insights easily within the team, fostering better collaboration and knowledge sharing.
+    \item \textbf{Integration with CI/CD:} Integrate MLflow with continuous integration and continuous deployment (CI/CD) pipelines for automated testing and deployment of models.
+\end{itemize}
+
+\subsubsection{Scalability}
+MLflow is designed to scale with your needs:
+
+\begin{itemize}
+    \item \textbf{Distributed Tracking:} Support for tracking experiments across distributed environments, making it suitable for large-scale machine learning projects.
+    \item \textbf{Flexible Storage Options:} Use various backend storage systems for logging data, including file systems, databases, and cloud storage.
+\end{itemize}
+
+By integrating MLflow into your machine learning workflow, you can enhance the management, reproducibility, and deployment of your experiments. It provides a comprehensive set of tools that streamline the entire lifecycle of machine learning models, making it easier to track, reproduce, and deploy models at scale.
+
+
 \section{Experiment tracking with MLflow}
 To start experiment tracking, we need to create a conda environment for tracking experiment and activate it.
 \begin{lstlisting}[language=python, numbers=none]
 conda create -n exp-tracking-env python=3.9
+conda activate exp-tracking-env
 \end{lstlisting}
+
+Once the environment is activated, install the ``requirements.txt'' file using:
+\begin{lstlisting}[language=python, numbers=none]
+pip install -r requirements.txt
+\end{lstlisting}
+
+Check the installed packages using:
+\begin{lstlisting}[language=python, numbers=none]
+pip list
+\end{lstlisting}
+
+To launch mlflow, and store all the artifacts in an sqlite database, we run:
+\begin{lstlisting}[language=python, numbers=none]
+mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5001
+\end{lstlisting}
+
+
+
+
 
 \section{On Colorful Boxes}
 There are lots of different boxes you can make:
