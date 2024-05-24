@@ -70,6 +70,7 @@
   % \tableofcontents
 \end{titlepage}
 
+%------------------- Chapter 1: Introduction  -----------------%
 \chapter{Introduction} \label{ch:1}
 \inspiration{Imagine you have a magic cookbook that can teach you how to make the best cookies ever. But it's not just any cookbook, it's a special one that learns and gets better every time you make cookies.
 
@@ -184,7 +185,7 @@ To run docker without sudo:
 sudo groupadd docker
 sudo usermod -aG docker \$USER
 \end{lstlisting}
-\item \textbf{Step 4}: Install Docker Compose
+\item \textbf{Step 4}: Install Docker Compose \\
 Install docker-compose in a separate directory
 \begin{lstlisting}[language=python, numbers=none]
 mkdir soft
@@ -286,6 +287,7 @@ Level & Description                     & Highlights                            
 \label{tab:my-table}
 \end{table}
 
+%--------------- Chapter 2: Experiment Tracking and Model Management -----------%
 \chapter{Experiment Tracking and Model Management} \label{ch:2}
 \section{Introduction to Experiment Tracking}
 
@@ -412,7 +414,221 @@ To launch mlflow, and store all the artifacts in an sqlite database, we run:
 mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5001
 \end{lstlisting}
 
-The updated notebook with experiment tracking using MLflow and logged predictions in MLflow UI is shown \href{https://github.com/chuksoo/mlops-zoomcamp-2024/blob/main/02%20-%20Experiment%20Tracking/duration-prediction.ipynb}{here}.
+If you encounter error when launching mlflow, use:
+\begin{lstlisting}[language=python, numbers=none]
+ps -A | grep gunicorn
+\end{lstlisting} to view the processes using the port and kill them with:
+\begin{lstlisting}[language=python, numbers=none]
+kill <process number>
+\end{lstlisting} before re-launching mlflow. 
+
+
+To access mlflow ui, open \href{http://127.0.0.1:5001} in your browser. The mlflow interface is seen in \textbf{Fig. \ref{fig:3}}.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/mlflow-experiment-interface.png}
+	\caption{MLflow Experiment Interface}
+	\label{fig:3}
+\end{figure}
+\FloatBarrier
+
+The updated notebook with experiment tracking using MLflow and logged predictions in MLflow UI is shown in this \href{https://github.com/chuksoo/mlops-zoomcamp-2024/blob/main/02%20-%20Experiment%20Tracking/duration-prediction.ipynb}{notebook for experiment tracking with mlflow}.
+
+\section{Machine Learning Lifecycle}
+ \begin{funfact}[frametitle=\facttitlep{Fun Fact}{MLOps cycle}]
+The Machine Learning lifecycle refers to the multiple steps that are needed to build and maintain a machine learning model.
+\end{funfact}
+
+In Machine Learning Lifecycle,  we train some model, we tuned the hyperparameters, we evaluated the model and then logged some metrics, hyperparameters and other information needed to mlflow.  Once we finish with this experiment tracking stage, it means that we are happy with the model. Then we can start thinking of saving this model and have some kind of versioning. After that, we would like to deploy the model. We may realize that the model needs to be updated in order to scale. Finally, once we deploy the model, the prediction monitoring stage starts.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/neptune-mlops.png}
+	\caption{MLOps cycle and machine learning experiment tracking}
+	\label{fig:4}
+\end{figure}
+%\FloatBarrier
+
+\subsection{Logging models in MLflow}
+Two options :
+\begin{itemize}[noitemsep, topsep=0pt]
+\item Log model as an artifact
+\begin{lstlisting}[language=python, numbers=none]
+mlflow.log_artifact("<mymodel>", artifact_path="models/")
+\end{lstlisting}
+\item Log model using the method ``log\_model''
+\begin{lstlisting}[language=python, numbers=none]
+mlflow.<framework>.log_model(model, artifact_path="models/")
+\end{lstlisting}
+\end{itemize}
+
+\subsection{Model Management}
+Model management is a critical aspect of the machine learning lifecycle, encompassing the processes and tools used to effectively organize, version, and track machine learning models. Effective model management ensures that models can be deployed, monitored, and updated seamlessly, maintaining their performance and relevance over time. The main components of model management:
+
+\subsubsection*{1. Versioning}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item \textbf{Importance:} Versioning allows data scientists to keep track of different iterations of a model, ensuring that they can reproduce results and compare performance across versions.
+    \item \textbf{Tools:} Tools like MLflow, DVC, and Git provide functionalities to version models, track changes, and manage model metadata.
+\end{itemize}
+
+\subsubsection*{2. Deployment}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item \textbf{Purpose:} Deployment involves taking a trained model and making it available for inference in a production environment.
+    \item \textbf{Methods:} Models can be deployed as a python function, in a docker container, as an APIs, embedded in applications, as a batch job in Apache Spark or integrated into data pipelines. Platforms like Kubernetes, AWS SageMaker, and Azure ML facilitate seamless deployment.
+\end{itemize}
+
+\subsubsection*{3. Monitoring}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item \textbf{Need:} Continuous monitoring of models in production is essential to ensure they perform as expected and to detect any performance degradation or data drift.
+    \item \textbf{Metrics:} Key metrics to monitor include accuracy, latency, throughput, and error rates. Tools like Prometheus, Grafana, and custom logging solutions can be used for monitoring.
+\end{itemize}
+
+\subsubsection*{4. Retraining}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item \textbf{Process:} As new data becomes available, models may need to be retrained to maintain their performance.
+    \item \textbf{Automation:} Automated retraining pipelines can be set up to periodically retrain models, incorporating the latest data and ensuring that the model remains up-to-date.
+\end{itemize}
+
+\subsubsection*{5. Governance and Compliance}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item \textbf{Compliance:} Ensuring that models comply with regulatory standards and organizational policies is crucial, especially in industries like finance and healthcare.
+    \item \textbf{Documentation:} Proper documentation and audit trails are necessary for compliance and to provide transparency into how models are developed and used.
+\end{itemize}
+
+\subsubsection*{6. Collaboration}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item \textbf{Teamwork:} Effective model management facilitates collaboration among data scientists, engineers, and business stakeholders.
+    \item \textbf{Tools:} Collaborative tools like Jupyter Notebooks, GitHub, and MLflow allow teams to share code, experiments, and insights.
+\end{itemize}
+
+\subsection*{Benefits of Effective Model Management}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item \textbf{Reproducibility:} Ensures that models can be consistently reproduced, which is crucial for validation and debugging.
+    \item \textbf{Scalability:} Facilitates the scaling of machine learning efforts across an organization.
+    \item \textbf{Efficiency:} Streamlines the deployment and monitoring processes, reducing time to market for new models.
+    \item \textbf{Compliance:} Helps maintain compliance with legal and regulatory requirements.
+\end{itemize}
+
+In summary, model management is essential for maintaining the lifecycle of machine learning models, from development through deployment and monitoring, ensuring they continue to deliver value and perform optimally in production environments.
+
+\subsection{Model Registry in Machine Learning}
+
+    \begin{mathaside}[frametitle=\mathtitle{Why Model \color{firebrick}{registry}}]
+            Model registry is an essential tool for managing the lifecycle of machine learning models, ensuring that they are well-organized, reproducible, and efficiently deployable, while enhancing collaboration and compliance within an organization.
+    \end{mathaside}
+
+A model registry is a centralized repository that stores and manages machine learning models. It plays a crucial role in the machine learning lifecycle by providing a systematic way to organize, version, and track models. The key components and benefits of a model registry:
+
+\textbf{1. Versioning}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item \textbf{Purpose:} Keeps track of different iterations and versions of a model.
+    \item \textbf{Functionality:} Allows comparison of model performance over time and ensures reproducibility.
+\end{itemize}
+
+\textbf{2. Metadata Management}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item \textbf{Purpose:} Stores important information about models, such as hyperparameters, training data, and evaluation metrics.
+    \item \textbf{Functionality:} Facilitates model auditability and governance.
+\end{itemize}
+
+\textbf{3. Lifecycle Management}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item \textbf{Purpose:} Manages the lifecycle of models from development to deployment and monitoring.
+    \item \textbf{Functionality:} Ensures smooth transitions between different stages of the model lifecycle.
+\end{itemize}
+
+\textbf{4. Access Control}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item \textbf{Purpose:} Defines who can access and modify models in the registry.
+    \item \textbf{Functionality:} Enhances security and ensures that only authorized users can make changes.
+\end{itemize}
+
+\textbf{5. Deployment Integration}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item \textbf{Purpose:} Facilitates the deployment of models to production environments.
+    \item \textbf{Functionality:} Provides integration with deployment tools and platforms for seamless model serving.
+\end{itemize}
+
+As we continue to generate more models, we need a model registry consisting of a tracking server to keep track of the models. Once you've decided that some of the model are ready for production, you then register the model into the mlflow model registry. Within the model registry, we have a staging , production and archive area for the models. In the model registry, all the models that are ready for production are stored here. 
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/model registry.png}
+	\caption{Model Registry}
+	\label{fig:5}
+\end{figure}
+\FloatBarrier
+
+The MLOps Engineer can look at the models in the registry, inspect their hyperparameters, the size of the model and so on. He can then decide to move the models between the different stages. The model that is ready for production can be assigned to ``staging'', the current model that is used in production can be assigned to the ``production'' stage, and some of the models can be archived in the ``archived'' stage. The archived models can be retrieved from the archived stage and move them back to production if we want to roll back some deployments. The model registry is not deploying any model, it just lists the models that are production ready and the stages are just labels assigned to the model. The model registry will need to be complemented with some CI/CD code in order to do the actual deployment of the models. 
+
+    \begin{mathaside}[frametitle=\mathtitle{Using \color{firebrick}{MLflowClient}}]
+           \texttt{mlflow.client} is a module in MLflow that provides a way to interact programmatically with an MLflow tracking server. The primary class in this module is MlflowClient, which provides a comprehensive API for managing experiments, managing runs, models, logging artifacts, and interacting with model registry. 
+    \end{mathaside}
+
+\subsection{Interacting Programmatically with MLflowClient}
+The \texttt{mlflow.client} module is useful for advanced use cases where you need programmatic control over MLflow entities, especially in production environments where automated workflows and integrations are required.
+
+Here's a basic example demonstrating how to use \texttt{MlflowClient}:
+
+\begin{lstlisting}[language=Python, caption=Example Usage of \texttt{MlflowClient}, label=code:example]
+import mlflow
+from mlflow.tracking import MlflowClient
+
+# Initialize the client
+client = MlflowClient()
+
+# Create an experiment
+experiment_id = client.create_experiment("My New Experiment")
+
+# Start a new run in the experiment
+run = client.create_run(experiment_id)
+run_id = run.info.run_id
+
+# Log parameters, metrics, and tags
+client.log_param(run_id, "param1", 5)
+client.log_metric(run_id, "metric1", 0.89)
+client.set_tag(run_id, "tag1", "value1")
+
+# Log an artifact (a file)
+with open("output.txt", "w") as f:
+    f.write("Hello, world!")
+client.log_artifact(run_id, "output.txt")
+
+# End the run
+client.set_terminated(run_id)
+
+# Get information about the run
+run_info = client.get_run(run_id)
+print(run_info)
+\end{lstlisting}
+
+\subsubsection{Key Methods of \texttt{MlflowClient}}
+
+\subsubsection*{1. Experiment Management}
+\begin{itemize}
+    \item \texttt{create\_experiment(name, artifact\_location=None, tags=None)}: Creates a new experiment.
+    \item \texttt{get\_experiment(experiment\_id)}: Retrieves an experiment by ID.
+    \item \texttt{delete\_experiment(experiment\_id)}: Deletes an experiment.
+\end{itemize}
+
+\subsubsection*{2. Run Management}
+\begin{itemize}
+    \item \texttt{create\_run(experiment\_id, start\_time=None, tags=None)}: Starts a new run.
+    \item \texttt{log\_param(run\_id, key, value)}: Logs a parameter.
+    \item \texttt{log\_metric(run\_id, key, value, timestamp=None, step=None)}: Logs a metric.
+    \item \texttt{set\_tag(run\_id, key, value)}: Sets a tag.
+    \item \texttt{log\_artifact(run\_id, local\_path, artifact\_path=None)}: Logs an artifact.
+\end{itemize}
+
+\subsubsection*{3. Model Registry Management}
+\begin{itemize}
+    \item \texttt{create\_registered\_model(name)}: Creates a new registered model.
+    \item \texttt{create\_model\_version(name, source, run\_id, tags=None, run\_link=None, description=None)}: Creates a new model version.
+    \item \texttt{transition\_model\_version\_stage(name, version, stage)}: Transitions a model version to a new stage.
+\end{itemize}
+
+
+
 
 
 
