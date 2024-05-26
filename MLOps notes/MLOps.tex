@@ -6,6 +6,7 @@
 \usepackage{NoteStyle}
 \usepackage{placeins}
 \usepackage{listings}
+\usepackage{pifont}
 
 \definecolor{firebrick}{rgb}{0.7, 0.13, 0.13}
 
@@ -72,15 +73,26 @@
 
 %------------------- Chapter 1: Introduction  -----------------%
 \chapter{Introduction} \label{ch:1}
-\inspiration{Imagine you have a magic cookbook that can teach you how to make the best cookies ever. But it's not just any cookbook, it's a special one that learns and gets better every time you make cookies.
-
-Now, making cookies is a bit like solving a puzzle. You need the right ingredients (like flour, sugar, and chocolate chips) and you need to mix them together in just the right way. Sometimes, you might make a mistake and your cookies don't turn out quite right.
-
-That's where MLOps comes in! MLOps is like having a team of helpful fairies who watch over you while you're baking. They make sure you're using the right ingredients, they help you mix everything together perfectly, and they even give you tips on how to make your cookies even better next time.
-
-So, with MLOps, you can keep making cookies and your magic cookbook will keep learning from each batch. And before you know it, you'll be making the most delicious cookies anyone has ever tasted!}{Chuks Okoli}{}
 
 \firstletter{Hello there}, and welcome to \booktopic. This work is a culmination of hours of effort to create my reference for machine learning operations. All of the explanations are in my own words but majority of the content are based on Alexey Grigorev's DataTalksClub \href{https://github.com/DataTalksClub/mlops-zoomcamp}{MLOps Zoomcamp course}.
+
+\begin{mathaside}[frametitle=\mathtitle{Explaining MLOps to a \color{firebrick}{5 year old}}]
+\textit{Imagine you have a magical garden. In this garden, you have a special plant that can grow different kinds of fruits, but you need to take good care of it.}
+
+\textit{MLOps is like having a magical gardener to help you. This gardener does three important things:}
+\begin{enumerate}
+    \item \textit{\textbf{Teaching the Plant}: The gardener shows the plant pictures of different fruits (like apples, oranges, and bananas) so it can learn to grow them. This is like the gardener helping the plant understand what to do. In MLOps, this is called training a machine learning model.}
+    
+    \item \textit{\textbf{Taking Care of the Garden}: The gardener makes sure the soil is rich, the water is just right, and there are no weeds. The gardener also provides the plant with the best tools and instructions to grow healthy fruits. In MLOps, this is called managing the infrastructure for the machine learning model.}
+    
+    \item \textit{\textbf{Sharing the Fruits}: Once the plant grows the fruits, the gardener picks them and puts them in baskets for everyone to enjoy. The gardener makes sure the fruits are easy to find and delicious. In MLOps, this is called deploying the model so it can be used for something useful.}
+\end{enumerate}
+
+\textit{Here's the magical part: The gardener watches over the garden to make sure everything is running smoothly. If a bug tries to eat the plant or if the plant stops growing fruits, the gardener fixes the problem right away.}
+
+\textit{So, MLOps is like having a magical gardener who helps your special plant (machine learning model) stay happy, healthy, and productive, making sure it grows the best fruits for everyone to enjoy!}
+\end{mathaside}
+
 
 \section{What is MLOps?}
 \inspiration{MLOps, also known as DevOps for machine learning, is an umbrella term that encompasses philosophies, practices, and technologies that are related to implementing machine learning lifecycles in a production environment.}{Microsoft Blog}{}
@@ -289,6 +301,9 @@ Level & Description                     & Highlights                            
 
 %--------------- Chapter 2: Experiment Tracking and Model Management -----------%
 \chapter{Experiment Tracking and Model Management} \label{ch:2}
+
+\inspiration{MLOps is critical for the success of AI projects because it allows teams to iterate quickly and deploy machine learning models reliably and at scale.}{Andrew Ng}{}
+
 \section{Introduction to Experiment Tracking}
 
  \begin{funfact}[frametitle=\facttitlep{Fun Fact}{MLflow}]
@@ -627,14 +642,39 @@ print(run_info)
     \item \texttt{transition\_model\_version\_stage(name, version, stage)}: Transitions a model version to a new stage.
 \end{itemize}
 
+\section{MLflow in Practice}
+\subsection{Different scenarios for running MLflow}
+Let's consider these three scenarios:
+\begin{itemize}[noitemsep, topsep=0pt]
+\item \textbf{\smtt{A single data scientist participating in an ML competition}}: In this scenario, having remote tracking server will be an overkill. Saving this information locally will be enough. Also, using model registry is useless since the data scientist is not deploying this model to production.
+\item \textbf{\smtt{A cross-functional team with one data scientist working on an ML model}}:Here, sharing the experiment information is important. Also, using model registry will be a good idea but it can be run remotely or local host.
+\item \textbf{\smtt{Multiple data scientists working on multiple ML models}}: Since multiple data scientist are working on multiple model, collaboration and sharing experiment information is very important. One data scientist can build the model, another data scientist can tune different hyperparameters to add to the model. They need a way to keep track of the models using a remote tracking server. Also, it is important to manage the lifecycle of the model since multiple people build and deploy the model hence model registry is important. 
+\end{itemize}
+
+\subsection{Things to Consider before Configuring MLflow}
+There are different things to consider before configuring MLflow.
+\begin{itemize}[noitemsep, topsep=0pt]
+\item \textbf{Backend Store}: Where MLflow saves information about your experiement such as metadata, models etc
+	\begin{itemize}[label={\ding{224}}]
+		\item local filesystem
+		\item SQLAlchemy compatible DB (e.g. SQLite)
+	\end{itemize}
+\item \textbf{Artifacts Store}: Decide where to store the artifact i.e., locally or remote
+	\begin{itemize}[label={\ding{224}}]
+		\item local filesystem
+		\item remote (e.g.  s3 bucket)
+	\end{itemize}
+\item \textbf{Tracking Server}: Decide how to run tracking server
+	\begin{itemize}[label={\ding{224}}]
+		\item no tracking server
+		\item localhost
+		\item remote
+	\end{itemize}
+\end{itemize}
 
 
 
 
-
-
-\section{On Colorful Boxes}
-There are lots of different boxes you can make:
 %
 \begin{itemize}
   \item Like this one,
