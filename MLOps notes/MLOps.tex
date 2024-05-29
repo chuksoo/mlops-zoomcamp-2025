@@ -672,7 +672,60 @@ There are different things to consider before configuring MLflow.
 	\end{itemize}
 \end{itemize}
 
+\section{MLflow: Benefits, limitations and alternatives}
+\subsection{Remote tracking server}
+The tracking server can be easily deployed to the cloud. Some of the benefits are:
+\begin{itemize}[noitemsep, topsep=0pt]
+\item Shared experiments with other data scientist
+\item Collaborate with others to build and deploy models
+\item Give more visibility of the data science efforts
+\end{itemize}
 
+\subsection{Issues with running a remote (shared) MLflow server}
+Some issues can arise when running a remote MLflow server. They include:
+\begin{itemize}[noitemsep, topsep=0pt]
+\item Security
+	\begin{itemize}[label={\ding{224}}]
+	\item Restrict access to the server (e.g. access through VPN)
+	\end{itemize}
+\item Scalability
+	\begin{itemize}[label={\ding{224}}]
+	\item Check \href{https://aws.amazon.com/blogs/machine-learning/managing-your-machine-learning-lifecycle-with-mlflow-and-amazon-sagemaker/}{Deploy MLflow on AWS Fargate}
+	\item Check \href{https://www.slideshare.net/databricks/mlflow-at-company-scale-239587085}{MLflow at Company Scale}
+	\end{itemize}
+\item Isolation
+	\begin{itemize}[label={\ding{224}}]
+	\item Define standard for naming experiments, modles, and a set of default tags
+	\item Restrict access to artifacts (e.g. use s3 buckets living in different AWS accounts)
+	\end{itemize}
+\end{itemize}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/remote tracking-mlflow.png}
+	\caption{Remote Tracking Server with MLflow}
+	\label{fig:6}
+\end{figure}
+\FloatBarrier
+
+\subsection{MLflow limitations (and when not to use it)}
+There are some limitations for MLflow. For example:
+\begin{itemize}[noitemsep, topsep=0pt]
+\item \textbf{Authetication \& Users:} The open source version of MLflow doesn't provide any sort of authetication.
+\item \textbf{Data versioning:} To ensure full reproducibility, we need to version the data used to train the model. MLflow doesn't provide a built-in solution for that but there are a few ways to deal with this limitation.
+\item \textbf{Model/Data Monitoring \& Alerting:} This is outside the scope of MLflow and currently there are more suitable tools for doing this.
+\end{itemize}
+
+There are some paid alternatives to MLflow including Neptune.ai, Comet, Weight \& Biases and many more. 
+
+%--------------- Chapter 3: Orchestration and ML Pipelines -----------%
+\chapter{Orchestration and ML Pipelines} \label{ch:3}
+\section{Introduction: ML pipelines and Mage}
+\section{Data preparation: ETL and Feature Engineering}
+\section{Training: sklearn models and XGBoost}
+\section{Observability: Monitoring and Alerting}
+\section{Triggering: Inference and Retraining}
+\section{Deploying: Running operations in Production}
 
 
 %
