@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/chuksokoli/Documents/mlops%20zoomcamp%202024/02%20-%20Experiment%20Tracking/homework/mlruns/0/ea07a7b8763b4c3aa4d96db0c5d45ae1/artifacts
+end_time: 1716962712550
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ea07a7b8763b4c3aa4d96db0c5d45ae1
+run_name: sneaky-elk-181
+run_uuid: ea07a7b8763b4c3aa4d96db0c5d45ae1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1716962707365
+status: 3
+tags: []
+user_id: chuksokoli
