@@ -777,15 +777,113 @@ PROJECT_NAME=mlops \
 
 The subproject that contains all the pipelines and code is named \texttt{unit\_3\_observability}
 
-
-
-
-
 \section{Data preparation: ETL and Feature Engineering}
 \section{Training: sklearn models and XGBoost}
 \section{Observability: Monitoring and Alerting}
 \section{Triggering: Inference and Retraining}
 \section{Deploying: Running operations in Production}
+
+%--------------- Chapter 4: Deployment -----------%
+\chapter{Deployment} \label{ch:4}
+\section{Model Deployment}
+\subsection{Three ways of deploying models}
+ \begin{funfact}[frametitle=\facttitlep{Fun Fact}{Deploying ML models}]
+Deploying machine learning model models is an iterative process that often involves multiple rounds of training, testing, and validating before the model is ready for production.
+\end{funfact}
+
+Deploying a model means that other application can get predictions from our model. There are three modes of deployment namely \textbf{online} deployment, \textbf{offline} or batch deployment, and \textbf{streaming}.
+
+First, we need to ask ourselves if we need to have predictions immediately or it can wait a little bit for an hour, a day or a week. If it can wait for a little bit, then we go for batch deployment. i.e., the model is not running all the time and we just apply our model to new data regularly. In online deployment, the model is up and running all the time and is always available. Two variant of online deployment is deployment as a web service and deployment via streaming. In web service deployment, we send HTTP requests and the service sends out prediction. In streaming, there is an ``events model service'' listening for events on the stream and reacting to this event. 
+
+\subsection{Web services: Introduction to Flask}
+    \begin{mathaside}[frametitle=\mathtitle{Web \color{firebrick}{Service}}]
+       A  \texttt{web service} is a method for communicating between two devices over a network using some protocols.
+    \end{mathaside}
+Assuming we want to use our model inside a \texttt{churn service} in order to make some predictions. The \texttt{marketing service} will communicate with our churn service by sending some request and getting a response. This can be done using a web service. In \textbf{web service}, a user sends a request in the form of a query, then the web service sends back a response to the user with the result.  In \textbf{Fig. \ref{fig:7}}, we have a notebook that was used to train the churn model. The model is saved to file. We can load this model from a different process or web service called the \texttt{churn service}. If the \texttt{marketing service} wants to identify if the user will churn, they send a request to the \texttt{churn service} with information about the user then they get back the predictions and based on these predictions, the marketing service can decide whether they want to send a promotional email with say 25\% discount to prevent churn.  
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/model-serving.png}
+	\caption{Serving Churn Model}
+	\label{fig:7}
+\end{figure}
+\FloatBarrier
+
+To do this, we put the model inside a web service using \textbf{flask}, which is a framework for creating web services in python, then we isolate dependencies for this service so they don't interfere with other services on ur machine by creating a special environment for python dependencies using \textbf{Pipenv}. Then we add another layer with system dependencies using \textbf{Docker}, and then finally we deploy the container containing this model to the cloud using \textbf{AWS Elastic Beanstalk}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/layers-to-deployment.png}
+	\caption{Layers to deployment}
+	\label{fig:8}
+\end{figure}
+\FloatBarrier
+
+To deploy a model, we turn our notebook to Python script called \texttt{train.py} where we save the model as a pickle file. Then using our \texttt{predict.py}, we can load the model and make prediction. 
+
+We can create a simple service using flask that pings and send a response back. To do that, we create a \texttt{ping.py} file containing:
+
+\begin{lstlisting}[language=python, numbers=none]
+from flask import Flask
+
+app = Flask('ping')
+
+@app.route('/ping', methods=['GET'])
+def ping():
+    return "PONG"
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=9696)
+\end{lstlisting}
+
+We start by installing and importing flask
+\begin{lstlisting}[language=python, numbers=none]
+from flask import Flask
+\end{lstlisting}
+
+We create a flask app
+\begin{lstlisting}[language=python, numbers=none]
+app = Flask('ping')
+\end{lstlisting}
+
+and then add a decorator, which is a way to add some extra functionality to our functions. This extra functionality will allow us turn the function into a web service. We specify the address the 'ping' will live in, and the method to access this route. 
+\begin{lstlisting}[language=python, numbers=none]
+@app.route('/ping', methods=['GET'])
+\end{lstlisting}
+
+We run the app in debug mode and specify the host to run on.
+\begin{lstlisting}[language=python, numbers=none]
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=9696)
+\end{lstlisting}
+
+We get the following output when it runs:
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/ping.png}
+	\caption{Ping result}
+	\label{fig:9}
+\end{figure}
+\FloatBarrier
+
+
+\subsection{Serving Model with Flask}
+
+\begin{lstlisting}[language=python, numbers=none]
+from flask import Flask
+\end{lstlisting}
+
+To use it, we run:
+\begin{lstlisting}[language=python, numbers=none]
+pip list
+\end{lstlisting}
+
+\subsection{Dependencies and Environment Management: Pipenv}
+
+
+\section{Online Deployment}
+\subsection{Web services: Deploying models with Flask and Docker}
+
 
 
 %
