@@ -821,8 +821,15 @@ To do this, we put the model inside a web service using \textbf{flask}, which is
 
 To deploy a model, we turn our notebook to Python script called \texttt{train.py} where we save the model as a pickle file. Then using our \texttt{predict.py}, we can load the model and make prediction. 
 
-We can create a simple service using flask that pings and send a response back. To do that, we create a \texttt{ping.py} file containing:
+There are some methods in web services we can use it to satisfy our problems. Here below we would list some.
+\begin{itemize}[noitemsep, topsep=0pt]
+ \item \texttt{GET}: GET is a method used to retrieve files, For example when we are searching for a cat image in google we are actually requesting cat images with GET method.
+ \item \texttt{POST}: POST is the second common method used in web services. For example in a sign up process, when we are submiting our name, username, passwords, etc we are posting our data to a server that is using the web service. (Note that there is no specification where the data goes)
+ \item \texttt{PUT}: PUT is same as POST but we are specifying where the data is going to.
+ \item \texttt{DELETE}: DELETE is a method that is used to request to delete some data from the server.
+\end{itemize}
 
+We can create a simple service using flask that pings and send a response back. To do that, we create a \texttt{ping.py} file containing:
 \begin{lstlisting}[language=python, numbers=none]
 from flask import Flask
 
@@ -865,18 +872,104 @@ We get the following output when it runs:
 	\label{fig:9}
 \end{figure}
 \FloatBarrier
+To test it, open your browser and search \smtt{localhost:9696/ping}, You'll see that the 'PONG' string is received. Congrats You've made a simple web server.
 
-
-\subsection{Serving Model with Flask}
-
+\subsection{Serving the Churn Model with Flask}
+In serving the churn model with flask, we want the model to be available at \smtt{/predict} in the \texttt{churn service}. The \texttt{marketing service} will send the \texttt{churn service} with information about the customers, and then we reply them with the probability of churning. The \texttt{churn service} also sends a promotional email to the customer with 25\% discount. To make the web service predict the churn value for each customer, we need to first load the previous saved model and use a prediction function in a special route.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/deploy-flask.png}
+	\caption{Ping result}
+	\label{fig:10}
+\end{figure}
+\FloatBarrier
+\begin{itemize}[noitemsep, topsep=0pt]
+\item To load the previous saved model, we create a \texttt{predict.py} file that loads the model
 \begin{lstlisting}[language=python, numbers=none]
+# Load the model
+import pickle
 from flask import Flask
+from flask import request
+from flask import jsonify
+
+model_file = 'model_C=1.0.bin'
+
+# load the model
+with open(model_file, 'rb') as f_in: # read binary file
+    dv, model = pickle.load(f_in)    # load() loads the file 
+\end{lstlisting}
+\item A function to predict a value for a customer
+\begin{lstlisting}[language=python, numbers=none]
+def predict_single(customer, dv, model):
+    X = dv.transform([customer])  # one-hot encoding to the data 
+    y_pred = model.predict_proba(X)[:, 1]
+    return y_pred[0]
+\end{lstlisting}
+\item Then the function used to create the web service that makes prediction and sends an email to the customer.
+\begin{lstlisting}[language=python, numbers=none]
+app = Flask('churn') # name of the app
+@app.route('/predict', methods=['POST'])  # in order to send the customer information we need to post its data.
+def predict():
+    customer = request.get_json()  # web services work best with json frame
+    prediction = predict_single(customer, dv, model)
+    churn = prediction >= 0.5
+
+    result = {
+        'churn_probability': float(prediction),  # cast numpy float type to python native float type
+        'churn': bool(churn),  # casting the value using bool method
+    }
+    return jsonify(result)  # send back the data in json format to the user
+\end{lstlisting}
+\end{itemize}
+
+To deploy,  the customer information in the \texttt{deploy.py} file is sent as JSON. The predict script is turned into a web service and sends a response back to the \texttt{marketing service} with predictions as JSON and an email to the customer likely to churn.
+\begin{lstlisting}[language=python, numbers=none]
+
+customer_id = "asdx-123d"
+customer_email = "asdx-123d@yahoo.com"
+customer = {
+    "gender": "female",
+    "seniorcitizen": 0,
+    "partner": "yes",
+    "dependents": "no",
+    "phoneservice": "no",
+    "multiplelines": "no_phone_service",
+    "internetservice": "dsl",
+    "onlinesecurity": "no",
+    "onlinebackup": "yes",
+    "deviceprotection": "no",
+    "techsupport": "no",
+    "streamingtv": "no",
+    "streamingmovies": "no",
+    "contract": "two_year",
+    "paperlessbilling": "yes",
+    "paymentmethod": "electronic_check",
+    "tenure": 10,
+    "monthlycharges": 29.85,
+    "totalcharges": (2 * 29.85)
+}
+# Making requests
+import requests
+url = "http://localhost:9696/predict"
+response = requests.post(url, json=customer).json()
+print(response)
+
+if response["churn"]:
+    print(f"Sending email to {customer_id} with email:", {customer_email})
+else:
+    print(f"Customer {customer_id} will not churn")
 \end{lstlisting}
 
-To use it, we run:
+When you run your app you will see a warning that it is not a WGSI server and not suitable for production environmnets. To fix this issue and run this as a production server there are plenty of ways available. One way to create a WSGI server is to use gunicorn. To install it use the command 
 \begin{lstlisting}[language=python, numbers=none]
-pip list
+pip install gunicorn
 \end{lstlisting}
+And to run the WGSI server you can simply run it with the command 
+\begin{lstlisting}[language=python, numbers=none]
+gunicorn --bind 0.0.0.0:9696 churn:app. 
+\end{lstlisting}
+
+Note that in \texttt{churn:app} the name churn is the name we set for our the file containing the code \texttt{app = Flask('churn')}(for example: churn.py), You may need to change it to whatever you named your Flask app file. So far, we have been able to make a production server that predict the churn value for new customers.
 
 \subsection{Dependencies and Environment Management: Pipenv}
 

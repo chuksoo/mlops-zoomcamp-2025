@@ -3,4 +3,5 @@
 __pycache__/
 *.py[cod]
 *$
-WA_Fn-UseC_-Telco-Customer-Churn.csv
+# Ignore the Churn csv file in 04 - Deployment subfolder
+04 - Deployment/WA_Fn-UseC_-Telco-Customer-Churn.csv
