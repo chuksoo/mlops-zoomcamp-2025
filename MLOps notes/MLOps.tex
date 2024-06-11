@@ -960,22 +960,331 @@ else:
     print(f"Customer {customer_id} will not churn")
 \end{lstlisting}
 
-When you run your app you will see a warning that it is not a WGSI server and not suitable for production environmnets. To fix this issue and run this as a production server there are plenty of ways available. One way to create a WSGI server is to use gunicorn. To install it use the command 
+You can run the prediction app using:
+\begin{lstlisting}[language=python, numbers=none]
+python predict.py
+\end{lstlisting}
+When you run the app, you will see a warning that it is not a WGSI server and not suitable for production environments. To fix this issue and run this as a production server there are plenty of ways available. One way to create a WSGI server is to use gunicorn. To install it use the command 
 \begin{lstlisting}[language=python, numbers=none]
 pip install gunicorn
 \end{lstlisting}
 And to run the WGSI server you can simply run it with the command 
 \begin{lstlisting}[language=python, numbers=none]
-gunicorn --bind 0.0.0.0:9696 churn:app. 
+gunicorn --bind 0.0.0.0:9696 predict:app 
 \end{lstlisting}
 
-Note that in \texttt{churn:app} the name churn is the name we set for our the file containing the code \texttt{app = Flask('churn')}(for example: churn.py), You may need to change it to whatever you named your Flask app file. So far, we have been able to make a production server that predict the churn value for new customers.
+Note that in \texttt{predict:app} the name ``predict'' is the name we set for the file containing the code \texttt{app = Flask('churn')}(for example: predict.py), You may need to change it to whatever you named your Flask app file. So far, we have been able to make a production server that predict the churn value for new customers.
 
 \subsection{Dependencies and Environment Management: Pipenv}
+Every time we're running a file from a directory we're using the executive files from a global directory. For example when we install python on our machine the executable files that are able to run our codes will go to somewhere like \smtt{\textbf{/home/username/python/bin/}} for example the pip command may go to \smtt{\textbf{/home/username/python/bin/pip}}. Sometimes the versions of libraries conflict (the project may not run or get into massive errors). For example we have an old project that uses sklearn library with the version of 0.24.1 and now we want to run it using sklearn version 1.0.0. We may get into errors because of the version conflict.
+To solve the conflict we can make virtual environments. Virtual environment is something that can seperate the libraries installed in our system and the libraries with specified version we want our project to run with. There are a lot of ways to create a virtual environments. 
+
+One way we are going to use is using a library named \texttt{pipenv}.  ``pipenv'' is a library that can create a virutal environment. To install this library just use the classic method \smtt{pip install pipenv}. After installing \texttt{pipenv}, we must install the libraries we want for our project in the new virtual environment. It's really easy, Just use the command \texttt{pipenv} instead of \texttt{pip}. i.e., \smtt{\textbf{pipenv install numpy scikit-learn==0.24.2 flask gunicorn}}. With this command we installed the libraries we want for our project. Note that using the pipenv command we made two files named ``Pipfile'' and ``Pipfile.lock''. If we look at this files closely we can see that in Pipfile the libraries we installed are named. If we specified the library name, it's also specified in Pipfile.
+
+The Pipfile looks like:
+\begin{lstlisting}[language=python, numbers=none]
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+numpy = "*"
+scikit-learn = "*"
+flask = "*"
+gunicorn = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
+
+\end{lstlisting}
+
+In ``Pipfile.lock'' we can see that each library with it's installed version is named and a hash file is there to reproduce if we move the environment to another machine.
+If we want to run the project in another machine, we can easily installed the libraries we want with the command \smtt{\textbf{pipenv install.}} This command will look into Pipfile and Pipfile.lock to install the libraries with specified version. After installing the required libraries we can run the project in the virtual environment with ``pipenv shell'' command. 
+\begin{lstlisting}[language=python, numbers=none]
+pipenv shell
+\end{lstlisting}
+
+This will go to the virtual environment's shell and then any command we execute will use the virtual environment's libraries. Installing and using the libraries such as gunicorn is the same as the last session.  To run the \smtt{predict} app, we can call gunicorn in the ``pipenv shell'' using:
+
+\begin{lstlisting}[language=python, numbers=none]
+gunicorn --bind 0.0.0.0:9696 predict:app
+\end{lstlisting}
+
+If you can't access the port, first kill any running process by checking the running processes with:
+\begin{lstlisting}[language=python, numbers=none]
+sudo lsof -t -i:9696
+\end{lstlisting}
+
+Then kill the port using:
+\begin{lstlisting}[language=python, numbers=none]
+kill <PID number>
+\end{lstlisting}
+
+After killing the port, you can try to run the ``predict'' app with gunicorn again. Until here we made a virtual environment for our libraries with a required specified version. To seperate this environment more, such as making gunicorn be able to run in windows machines we need another way. The other way is using \smtt{\textbf{Docker}}. Docker allows us to seperate everything more than before and make any project able to run on any machine that support Docker smoothly.
+
+\subsection{Dependencies and Environment Management: Docker}
+Let's say we have our host machine which is a laptop with Ubuntu and then on this laptop, we have different virtual environment. For instance, we may have a virtual environment for \texttt{churn service} and another one for \texttt{lead scoring service} with different python versions and dependencies. With Docker, we can get even more isolation. So instead of creating virtual environment for each services, we can put each service in a separate container and these services will not know anything about each other.
+
+To perform more isolation .i.e,  separate our project file from our system machine, there is an option named Docker. With Docker you are able to pack all your project in a system that you want and run it in any system machine. For example if you want Ubuntu 20.4 you can have it in a mac or windows machine or other operating systems. 
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/docker-isolation.png}
+	\caption{Docker Isolation}
+	\label{fig:11}
+\end{figure}
+%\FloatBarrier
+
+To get started with Docker for the churn prediction project you can follow the instructions below.
+
+\begin{itemize}
+\item On Ubuntu
+\begin{lstlisting}[language=python, numbers=none]
+sudo apt-get install docker.io
+\end{lstlisting}
+
+To run docker without sudo, follow this instruction.
+
+\item On MacOS
+	\begin{itemize}[noitemsep, topsep=0pt]
+		\item Follow the steps in the \href{https://docs.docker.com/desktop/install/mac-install/}{Docker docs}.
+	\end{itemize}
+\end{itemize}
+
+To run docker using the default command in python:
+\begin{lstlisting}[language=python, numbers=none]
+docker run -it --rm python:3.8.12-slim
+\end{lstlisting}
+
+We can change the entrypoint to be bash using:
+\begin{lstlisting}[language=python, numbers=none]
+docker run -it --rm --entrypoint=bash python:3.8.12-slim
+\end{lstlisting}
+
+Once our project was packed in a Docker container, we're able to run our project on any machine.  First we have to make a Docker image. In Docker image file, there are settings and dependencies we have in our project. To find Docker images that you need you can simply search the Docker website. 
+
+We can create a Dockerfile where we define everything that we want to do in a docker image. Here is a Dockerfile (There should be no comments in Dockerfile, so remove the comments when you copy)
+
+\begin{lstlisting}[language=python, numbers=none]
+# First install the python 3.8, the slim version uses less space
+FROM python:3.8.12-slim
+
+# Install pipenv library in Docker 
+RUN pip install pipenv
+
+# create a directory in Docker named app and we're using it as work directory 
+WORKDIR /app                                                                
+
+# Copy the Pip files into our working derectory 
+COPY ["Pipfile", "Pipfile.lock", "./"]
+
+# install the pipenv dependencies for the project and deploy them.
+RUN pipenv install --deploy --system
+
+# Copy any python files and the model we had to the working directory of Docker 
+COPY ["*.py", "model_C=1.0.bin", "./"]
+
+# We need to expose the 9696 port because we're not able to communicate with Docker outside it
+EXPOSE 9696
+
+# If we run the Docker image, we want our churn app to be running
+ENTRYPOINT ["gunicorn", "--bind", "0.0.0.0:9696", "predict:app"]
+\end{lstlisting}
+
+The flags \smtt{--deploy} and \smtt{--system} makes sure that we install the dependencies directly inside the Docker container without creating an additional virtual environment (which pipenv does by default).
+
+If we don't put the last line ENTRYPOINT, we will be in a python shell. Note that for the entrypoint, we put our commands in double quotes.
+
+After creating the Dockerfile, we need to build it:
+\begin{lstlisting}[language=python, numbers=none]
+docker build -t churn-prediction .
+\end{lstlisting}
+
+To run it, execute the command below:
+\begin{lstlisting}[language=python, numbers=none]
+docker run -it -p 9696:9696 churn-prediction:latest
+\end{lstlisting}
+
+Flag explanations:
+\begin{itemize}[noitemsep, topsep=0pt]
+\item \smtt{-t}: is used for specifying the tag name ``churn-prediction''.
+\item \smtt{-it}: in order for Docker to allow us access to the terminal.
+\item \smtt{--rm}: allows us to remove the image from the system after we're done.
+\item \smtt{-p}: to map the 9696 port of the Docker to 9696 port of our machine. (first 9696 is the port number of our machine and the last one is Docker container port.)
+\item \smtt{--entrypoint=bash}: After running Docker, we will now be able to communicate with the container using bash (as you would normally do with the Terminal). Default is python.
+\end{itemize}
+
+At last you've deployed your prediction app inside a Docker continer. 
 
 
 \section{Online Deployment}
 \subsection{Web services: Deploying models with Flask and Docker}
+\subsubsection{Creating a Virtual Environment with Pipenv}
+To deploy the model, we have to create a virtual environment using \texttt{Pipenv}. In your project folder, create a web-service folder.  This ``web-service'' will house the files required to deploy the application.  We should make sure that the version we used to create the pickle file is the exact same version we install in the virtual environment.
+\begin{lstlisting}[language=python, numbers=none]
+ pip freeze | grep scikit-learn
+\end{lstlisting}
+
+Using the same exact version of scikit-learn, we install that in the virtual environment with ``pipenv''. In the web-service folder, run the command to install the necessary packages using ``pipenv''.
+\begin{lstlisting}[language=python, numbers=none]
+ pipenv install scikit-learn==1.0.2 flask --python=3.9
+\end{lstlisting}
+
+This creates a \texttt{Pipfile} and \texttt{Pipfile.lock} containing the packages we just installed and their exact version. Once the virtual environment have been created, launch the subshell in virtual environment. To enter the virtual environment, run the command below:
+\begin{lstlisting}[language=python, numbers=none]
+pipenv shell
+\end{lstlisting}
+The prompt is usually long. We can reduce it using:
+\begin{lstlisting}[language=python, numbers=none]
+PS1="> "
+\end{lstlisting}
+
+\subsubsection{Creating a script for predicting}
+To predict, we create a script for prediction called \texttt{predict.py}:
+
+\begin{lstlisting}[language=python, numbers=none]
+import pickle
+
+with open('lin_reg.bin', 'rb') as f_in:
+    (dv, model) = pickle.load(f_in)
+
+def prepare_features(ride):
+    features = {}
+    features['PU_DO'] = '%s_%s' % (ride['PULocationID'], ride['DOLocationID'])
+    features['trip_distance'] = ride['trip_distance']
+    return features
+
+def predict(features):
+    X = dv.transform(features)
+    preds = model.predict(X)
+    return preds[0]
+\end{lstlisting}
+
+We can test our prediction with a \texttt{test.py} file
+\begin{lstlisting}[language=python, numbers=none]
+import predict
+
+ride = {
+    "PULocationID": 10,
+    "DOLocationID": 50,
+    "trip_distance": 40
+}
+
+features = predict.prepare_features(ride)
+pred = predict.predict(ride)
+print(pred)
+\end{lstlisting}
+To run prediction, we simply run \textbf{\smtt{python test.py}} in terminal.
+
+\subsubsection{Putting the script into a Flask app}
+To turn the scripts above to a flask application, we create a function that will be a wrapper around the \texttt{predict.py} and \texttt{test.py} file. This function will take web requests, HTTP request and the score it gets in the request and return the prediction. Let's call the function \texttt{predict\_endpoint()}. Update the \texttt{predict.py} file with the function \texttt{predict\_endpoint()}.
+
+\begin{lstlisting}[language=python, numbers=none]
+import pickle
+from flask import Flask, request, jsonify
+
+with open('lin_reg.bin', 'rb') as f_in:
+    (dv, model) = pickle.load(f_in)
+
+def prepare_features(ride):
+    features = {}
+    features['PU_DO'] = '%s_%s' % (ride['PULocationID'], ride['DOLocationID'])
+    features['trip_distance'] = ride['trip_distance']
+    return features
+
+def predict(features):
+    X = dv.transform(features)
+    preds = model.predict(X)
+    return float(preds[0])
+  
+app = Flask('duration-prediction')
+
+@app.route('/predict', methods=['POST']) # turn predict function into an endpoint
+def predict_endpoint():
+    ride = request.get_json()
+
+    features = prepare_features(ride)
+    pred = predict(features)
+
+    result = {
+        'duration': pred
+    }
+    return jsonify(result)
+
+
+if __name__ == "__main__":
+    app.run(debug=True, host='0.0.0.0', port=9696)
+\end{lstlisting}
+In the above code, we added an import for Flask, requests and jsonify. Requests gives us a way get the data,  the result of our prediction will be a dictionary with duration and jsonify returns this as a \texttt{json} object. We also added a decorator which adds some extra functionality to the predict function by turning the function into HTTP endpoint and we can start sending requests to this endpoint and get responses.  This library has a method called ``POST'' that we use for sending post requests and here we need to specify the url end point and port to which we want to send the request.
+
+We update the \texttt{test.py} file with the \textbf{\smtt{url}} variable and \textbf{\smtt{response}} variable.
+\begin{lstlisting}[language=python, numbers=none]
+import requests
+import predict
+
+ride = {
+    "PULocationID": 10,
+    "DOLocationID": 50,
+    "trip_distance": 40
+}
+
+url = 'http://localhost:9696/predict'
+response = requests.post(url, json=ride)
+print(response.json())
+\end{lstlisting}
+
+The \texttt{requests} library is used for making HTTP requests in Python. The \textbf{\smtt{url}} variable contains the address of the local server endpoint \textbf{\smtt{/predict}} running on port 9696. The \textbf{\smtt{requests.post}} method is used to send a POST request to the \textbf{\smtt{url.}} The \textbf{\smtt{json}} parameter is used to send the \textbf{\smtt{ride}} dictionary as a JSON payload in the request body. The response from the server is stored in the \textbf{\smtt{response}} variable. The \textbf{\smtt{response.json()}} method is called to parse the JSON response from the server into a Python dictionary. The parsed response is then printed to the console.
+
+The code in the \texttt{test.py} file sends a POST request to a local server to get a prediction based on the provided ride details. In the prompt in the virtual environment, we run \textbf{\texttt{python predict.py}} and open another terminal to run \textbf{\texttt{python test.py}}.  Now we have sucessfully put our model in a flask and deployed that model in a development environment. Alternatively, we can install gunicorn if we want to put this into production. The application we just ran is running in a development environment in Flask. To run it in a production environment, we use gunicorn.  We first install gunicorn
+
+\begin{lstlisting}[language=python, numbers=none]
+pipenv install gunicorn
+\end{lstlisting}
+
+Then start the service using:
+\begin{lstlisting}[language=python, numbers=none]
+gunicorn --bind 0.0.0.0:9696 predict:app 
+\end{lstlisting}
+Then test the the service and make prediction with \textbf{\texttt{python test.py}}.
+
+\subsubsection{Packaging the app to Docker}
+To package the app to \texttt{Docker}, first we need to create a ``Dockerfile''. In the Dockerfile, we add the following command:
+\begin{lstlisting}[language=python, numbers=none]
+FROM python:3.9.18-slim
+
+RUN pip install -U pip
+RUN pip install pipenv
+
+WORKDIR /app  
+
+COPY ["Pipfile", "Pipfile.lock", "./"]
+
+RUN pipenv install --deploy --system
+
+COPY ["predict.py", "lin_reg.bin", "./"]
+
+EXPOSE 9696
+
+ENTRYPOINT ["gunicorn", "--bind=0.0.0.0:9696", "predict:app"]
+\end{lstlisting}
+
+Next we build the docker image using the Dockerfile
+\begin{lstlisting}[language=python, numbers=none]
+docker build -t ride-duration-prediction-service:v1 .
+\end{lstlisting}
+
+And then we can test it in interactive mode (``--it'') and remove it after running (``-p'') using:
+\begin{lstlisting}[language=python, numbers=none]
+docker run -it --rm -p 9696:9696 ride-duration-prediction-service:v1 
+\end{lstlisting}
+
+In a separate shell, test the the service and make prediction with \textbf{\texttt{python test.py}}. With the docker container, we can serve our model and deploy the service anywhere docker is supported .e.g., using AWS Elastic Beanstalk or Kubernetes.
+
+\subsection{Web services: Getting the models from the model registry (MLflow)}
+
 
 
 
