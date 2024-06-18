@@ -672,6 +672,146 @@ There are different things to consider before configuring MLflow.
 	\end{itemize}
 \end{itemize}
 
+\subsection{Setting Up MLflow Tracking Server in AWS}
+Assuming we have multiple data scientist working on multiple ML models. We can setup a remote tracking server on \href{https://aws.amazon.com/ec2/}{Amazon Elastic Compute Cloud (Amazon EC2)} with PostgreSQL backend using \href{https://aws.amazon.com/rds/}{Amazon Relational Databse Service (RDS)} and \href{https://aws.amazon.com/s3/}{Amazon Simple Storage Service (S3)} to store the model and artifacts. MLflow uses the backend store and artifact store for persistent runs. The PostgreSQL backend stores metadata such as parameters, metrics, and tags while the artifact store holds large files such as serialized models and config files. MLflow experiments can be explored by accessing the remote server. To run experiments using AWS, we have to configure an AWS account.
+
+\subsubsection{Basic AWS Setup}
+
+ \begin{itemize}
+\item \textbf{Step 1}: Launch a new EC2 instance \\
+For this, you can select one of the instance types that are free tier eligible. For example, we will select an Amazon Linux OS (\smtt{Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type}) and a \smtt{t2.micro} instance type, which are free tier eligible.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/EC2-setup.png}
+	\caption{Application and OS Setup}
+	\label{fig:6}
+\end{figure}
+\FloatBarrier
+You'll also need to create a new key pair so later you can connect to the new instance using SSH. Click on ``Create new key pair'' and complete the details like in the image below:
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.65\textwidth]{Images/mlflow-key-pair.png}
+	\caption{Create Key Pair}
+	\label{fig:7}
+\end{figure}
+\FloatBarrier
+
+Select the new key pair and then click on ``Launch Instance''.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.65\textwidth]{Images/key-pair-setup.png}
+	\caption{Select Key Pair}
+	\label{fig:8}
+\end{figure}
+\FloatBarrier
+ Leave the rest of the configuration the way it is an launch the instance.
+
+\item \textbf{Step 2}:  Configure the security group \\
+Open up the new instance and select the newly created ``Security groups'' in ``Security''. Edit security group so the EC2 instance accepts SSH (port 22) and HTTP connections (port 5000). Do this by ``Edit Inbound rules''. 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.65\textwidth]{Images/security-group.png}
+	\caption{Security group setup}
+	\label{fig:9}
+\end{figure}
+\FloatBarrier
+
+\item \textbf{Step 3}: Create an S3 bucket \\
+The Amazon Simple Storage Service (S3) will be used as the artifact store. Go to ``S3'' and click on ``Create bucket''. Fill in the bucket name as in the image below and leave all the other configurations with their default values.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.65\textwidth]{Images/S3-setup.png}
+	\caption{S3 bucket setup}
+	\label{fig:10}
+\end{figure}
+\FloatBarrier
+
+\item \textbf{Step 4}: Create a new PostgreSQL database in RDS \\
+The Amazon Relational Databse Service (RDS) uses PostgreSQL engine as the backend store. Go to the RDS Console and click on ``Create database''. Make sure to select ``PostgreSQL'' engine type and the ``Free tier'' template.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{Images/create-database.png}
+	\caption{Create RDS Database}
+	\label{fig:11}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{Images/RDS-setup.png}
+	\caption{Setup RDS username and password}
+	\label{fig:12}
+\end{figure}
+\FloatBarrier
+
+Select a name for your DB instance, set the master username as ``mlflow'' and tick the option ``Auto generate a password'' so Amazon RDS generate a password automatically.  Setup instance connection, use the default VPC and connectivity to the compute resource. Use default values for all the other configurations.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{Images/instance-configuration.png}
+	\caption{Instance Configuration}
+	\label{fig:13}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{Images/EC2 connectivity to DB.png}
+	\caption{EC2 connectivity to DB}
+	\label{fig:14}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{Images/RDS-setup.png}
+	\caption{RDS Setup}
+	\label{fig:15}
+\end{figure}
+\FloatBarrier
+
+Specify a database name so that RDS will create the database for you.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{Images/set-db-name.png}
+	\caption{Additional configuration to set database name}
+	\label{fig:16}
+\end{figure}
+
+After clicking on ``launch database'' you will be able to check the newly generated password, but take into account that the automatically generated password will be shown only once!. Take note of the master username, password, initial database name, and endpoint. 
+
+
+Once the DB instance is created, go to the RDS console, select the new db and under ``Connectivity \& security'' select the VPC security group. Modify the security group by adding a new inbound rule that allows postgreSQL connections on the port 5432 from the security group of the EC2 instance. This way, the server will be able to connect to the postgres database.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.65\textwidth]{Images/postgresql_inbound_rule.png}
+	\caption{Edit Security Groups}
+	\label{fig:17}
+\end{figure}
+
+
+
+\item \textbf{Step 5}: Connect to the EC2 instance and launch the tracking server \\
+Go to the EC2 Console and find the instance launched and click on ``Connect'' and then follow the steps described in the tab ``SSH''.
+
+Run the following commands to install the dependencies, configure the environment and launch the server:
+
+\begin{lstlisting}[language=python, numbers=none]
+sudo yum update
+pip3 install mlflow boto3 psycopg2-binary
+aws configure # you'll need to input your AWS credentials here
+mlflow server -h 0.0.0.0 -p 5000 --backend-store-uri postgresql://DB_USER:DB_PASSWORD@DB_ENDPOINT:5432/DB_NAME --default-artifact-root s3://S3_BUCKET_NAME
+\end{lstlisting}
+Note: before launching the server, check that the instance can access the s3 bucket created. To do that, just run this command from the EC2 instance: \smtt{aws s3 ls}. You should see the bucket listed in the result.
+
+\item \textbf{Step 6}: Access the remote tracking server from your local machine \\
+Open a new tab on your web browser and go to this address: \smtt{http://<EC2\_PUBLIC\_DNS>:5000} (you can find the instance's public DNS by checking the details of your instance in the EC2 Console).
+\end{itemize}
+
 \section{MLflow: Benefits, limitations and alternatives}
 \subsection{Remote tracking server}
 The tracking server can be easily deployed to the cloud. Some of the benefits are:
