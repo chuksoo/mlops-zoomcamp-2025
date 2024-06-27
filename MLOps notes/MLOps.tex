@@ -1423,7 +1423,83 @@ docker run -it --rm -p 9696:9696 ride-duration-prediction-service:v1
 
 In a separate shell, test the the service and make prediction with \textbf{\texttt{python test.py}}. With the docker container, we can serve our model and deploy the service anywhere docker is supported .e.g., using AWS Elastic Beanstalk or Kubernetes.
 
-\subsection{Web services: Getting the models from the model registry (MLflow)}
+\subsection{Web services: Getting the models from the model registry (MLflow)} --- Not up to date
+\begin{enumerate}
+    \item \textbf{Overview:}
+    \begin{itemize}
+        \item Discussed combining model deployment using Flask with model registry.
+        \item Deployed a linear regression model as a web service.
+        \item Exposed predictive function as an endpoint for making predictions.
+    \end{itemize}
+    
+    \item \textbf{Model Registry Integration:}
+    \begin{itemize}
+        \item Utilized model registry to fetch models (e.g., random forest) using a run ID.
+        \item Demonstrated setting up MLflow server with SQLite and S3 as the artifact root.
+    \end{itemize}
+    
+    \item \textbf{Implementation Steps:}
+    \begin{itemize}
+        \item Prepared functions for data conversion and prediction.
+        \item Created Flask application to deploy model fetched from MLflow registry.
+        \item Demonstrated setting up virtual environment and installing dependencies.
+    \end{itemize}
+    
+    \item \textbf{Simplifying Model Handling:}
+    \begin{itemize}
+        \item Emphasized using scikit-learn pipelines to combine preprocessing and model into a single entity.
+        \item Demonstrated logging entire pipeline to MLflow, reducing complexity in fetching artifacts.
+    \end{itemize}
+    
+    \item \textbf{Testing and Validation:}
+    \begin{itemize}
+        \item Validated the new pipeline-based model by running predictions and comparing outputs.
+        \item Highlighted the importance of specifying model version in responses.
+    \end{itemize}
+    
+    \item \textbf{Independence from Tracking Server:}
+    \begin{itemize}
+        \item Addressed potential issues with dependency on tracking servers.
+        \item Demonstrated fetching models directly from S3 to avoid dependency on MLflow tracking server.
+        \item Suggested using environment variables for dynamic configuration in deployments (e.g., Kubernetes).
+    \end{itemize}
+    
+    \item \textbf{Code and Configuration:}
+    \begin{itemize}
+        \item Provided code snippets for setting up and testing Flask application.
+        \item Showed how to replace hardcoded paths with environment variables for flexible deployment.
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection*{Example Code Snippets:}
+\textbf{Creating a Pipeline:}
+\begin{verbatim}
+from sklearn.pipeline import make_pipeline
+
+pipeline = make_pipeline(vectorizer, RandomForestRegressor())
+pipeline.fit(X_train, y_train)
+\end{verbatim}
+
+\textbf{Logging Pipeline to MLflow:}
+\begin{verbatim}
+mlflow.sklearn.log_model(pipeline, "model")
+\end{verbatim}
+
+\textbf{Fetching Model from S3:}
+\begin{verbatim}
+model_uri = f"s3://my-bucket/mlflow/{run_id}/artifacts/model"
+model = mlflow.sklearn.load_model(model_uri)
+\end{verbatim}
+
+\textbf{Using Environment Variables:}
+\begin{verbatim}
+import os
+
+run_id = os.getenv('RUN_ID')
+model_uri = f"s3://my-bucket/mlflow/{run_id}/artifacts/model"
+model = mlflow.sklearn.load_model(model_uri)
+\end{verbatim}
+
 
 \subsection{Batch: Preparing a scoring script}
 Assuming we have built a model to predict the ride duration and we want to see how our drivers deviate from the actual duration, we can deploy the model for predicting ride duration in batch mode. In deploying our model using Batch deployment, we have to train the model in a notebook, apply the model and then turn the notebook into a script.
@@ -1440,8 +1516,15 @@ Once the script is ready, we can create an environment with pipenv and specify a
 
 %--------------- Chapter 5: Monitoring -----------%
 \chapter{Model Monitoring} \label{ch:5}
+\inspiration{Model monitoring is the ongoing process of tracking, analyzing, and evaluating the performance and behavior of machine learning models in real-world, production environments. It involves measuring various data and model metrics to help detect issues and anomalies and ensure that models remain accurate, reliable, and effective over time.}{\href{https://www.evidentlyai.com/ml-in-production/model-monitoring}{EvidentlyAI Blog}}{}
+
 \section{Introduction to ML monitoring}
-Once we've built a machine learning model, after sometime, the model's performance starts to degrade.  This module discusses how to monitor machine learning models in production, focusing on maintaining model performance over time. Machine learning monitoring is done to monitor:
+
+ \begin{funfact}[frametitle=\facttitlep{Fun Fact}{Challenges in ML Model Deployment}]
+Implementing a machine learning model is challenging, but building production services with that model is even harder. Over time, a model's performance may degrade, necessitating monitoring to maintain quality.
+\end{funfact}
+
+Once we've built a machine learning model, after sometime, the model's performance starts to degrade.  ML model monitoring involves tracking a predefined set of metrics to detech issues and answer questions like ``What happened?'' and ``Is the system working as expected?'' This module discusses how to monitor machine learning models in production, focusing on maintaining model performance over time. Machine learning monitoring is done to monitor:
 \begin{itemize}[noitemsep, topsep=0pt]
 \item Service Health
 	\begin{itemize}
@@ -1465,61 +1548,74 @@ Once we've built a machine learning model, after sometime, the model's performan
 	\end{itemize}
 \end{itemize}
 
-\section{Importance of Monitoring}
-\begin{itemize}
-    \item Challenge: Models' performance degrades over time.
-    \item Solution: Implement monitoring to track and maintain model performance.
-\end{itemize}
+\texttt{\textbf{Service Health Monitoring}} - Service health monitoring is essential to ensure the service operates correctly. Key metrics include uptime, memory usage, and latency.
 
-\section{Service Health Monitoring}
-\begin{itemize}
-    \item Basics: Ensure the service itself is functional by tracking metrics like uptime, memory usage, and latency.
-    \item Additional Layers for ML Models: Include metrics related to data and model performance.
-\end{itemize}
+\texttt{\textbf{Model Performance Metrics}} - Additional Layers for ML Models: Include metrics related to data and model performance. Model performance metrics monitors model performance and is dependent on the problem statement. For ranking algorithms, use ranking metrics; for regression problems, use metrics like mean absolute error (MAE) or mean absolute percentage error (MAPE). For classification problems, use metrics like log loss, precision, and recall.
 
-\section{Model Performance Metrics}
-\begin{itemize}
-    \item Types of Metrics:
+\texttt{\textbf{Data Quality and Integrity Metrics}} -  In cases where ground truth is delayed, use proxy metrics related to data quality and integrity.  Monitor metrics like the share of missing values, value ranges, and data distribution changes.
+
+\texttt{\textbf{Data Drift and Concept Drift}} -  Monitor data drift and concept drift to detect changes in data distributions over time. We compare input data distributions and model outputs over time to detect drifts.These metrics serve as early signals of potential problems with the model.
+
+\texttt{\textbf{Extended Metrics for Monitoring}}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item Depending on the sensitivity of your case and risks, consider additional metrics such as:
     \begin{itemize}
-        \item Ranking Algorithms: Use ranking metrics.
-        \item Regression Problems: Use metrics like Mean Absolute Error (MAE) or Mean Absolute Percentage Error (MAPE).
-        \item Classification Problems: Use metrics like log loss, precision, and recall.
+        \item Quality metrics by segments (e.g., category-specific performance).
+        \item Model bias and fairness, especially in sensitive domains like healthcare or finance.
+        \item Outlier monitoring to reduce risks by sending specific objects to manual review.
+        \item User trust metrics for recommender systems, especially for explaining recommendations.
     \end{itemize}
 \end{itemize}
 
-\section{Handling Ground Truth Delays}
-\begin{itemize}
-    \item Proxy Metrics: Use data quality and integrity metrics to catch issues when ground truth is delayed.
-    \begin{itemize}
-        \item Examples: Share of missing values, value range checks, etc.
-    \end{itemize}
+\newpage
+\subsection{Batch and Online Model Monitoring}
+
+    \begin{mathaside}[frametitle=\mathtitle{Importance \color{firebrick}{of Monitoring}}]
+       Monitoring  \texttt{production services} is crucial to ensure they function correctly. For machine learning models, additional layers of monitoring related to data and model performance are required. Important aspects to monitor include model performance, data drift, and concept drift.
+    \end{mathaside}
+
+\texttt{\textbf{Batch Monitoring}}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item Involves running evaluation jobs periodically or based on triggers.
+    \item Daily monitoring jobs query model prediction logs to compute model and data quality metrics.
+    \item Suitable for batch data pipelines and online ML services.
+    \item Easier to maintain than continuous monitoring services.
+    \item Combines immediate and delayed monitoring within the same architecture.
+    \item Can run data validation jobs alongside monitoring.
+    \item Introduces delays in metric computation.
+    \item Requires expertise in workflow orchestration and data engineering resources.
 \end{itemize}
 
-\section{Data and Concept Drift}
-\begin{itemize}
-    \item Monitoring Changes: Compare input data distributions and model outputs over time to detect drifts.
-    \item Early Warning: Data and concept drift metrics serve as early indicators of potential problems.
+\texttt{\textbf{Real-Time Monitoring}}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item Data is sent directly from the ML service to the monitoring service.
+    \item Continuously computes and publishes ML quality metrics.
+    \item Suitable for online ML prediction services.
+    \item Allows near real-time detection of issues like missing data.
+    \item More costly in terms of engineering resources.
+    \item Batch monitoring pipelines may still be needed for delayed ground truth.
 \end{itemize}
 
-\section{Extended Metrics for Monitoring}
-\begin{itemize}
-    \item Quality by Segments: Calculate quality metrics for different categories within the dataset.
-    \item Bias and Fairness: Monitor for biases, especially in sensitive domains like healthcare or finance.
-    \item Outliers: Track and manage outliers, especially if individual errors are costly.
-    \item User Trust: For recommendation systems, provide explanations to build user trust.
+Use existing monitoring tools and dashboards (like Grafana) to monitor ML models.  For batch models, metrics like data drift and precision can be calculated on batches of data. For online models, use window functions to generate small batches for calculating metrics.
+
+\subsection{Monitoring Architecture}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item We can build a general monitoring scheme applicable to both batch and non-batch models.
+    \item Start with prediction logs from the service (batch or online).
+    \item Create a monitoring pipeline that reads prediction logs, calculates metrics, and stores them in a database.
+    \item Use a dashboard tool like Grafana to visualize and monitor these metrics.
 \end{itemize}
 
-\section{Reusing Existing Monitoring Architecture}
-\begin{itemize}
-    \item Leveraging Existing Tools: Use existing monitoring tools and dashboards (like Grafana) to monitor ML models.
-    \item Batch and Online Models:
-    \begin{itemize}
-        \item Batch Mode: Calculate metrics on batch data.
-        \item Online Mode: Use window functions to batch data before calculating metrics.
-    \end{itemize}
-\end{itemize}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/monitoring-scheme.png}
+	\caption{Monitoring Scheme}
+	\label{fig:12}
+\end{figure}
+%\FloatBarrier
 
-\section{Implementation Plan}
+\subsection{Practical Implementation}
+For batch models, use BI tools like Tableau or Looker for initial analysis. For online models, simulate production usage and build monitoring on top of logs using tools like Prefect and Evidently. Store metrics in a PostgreSQL database and visualize them using Grafana.
 \begin{itemize}
     \item Logging and Monitoring Pipeline:
     \begin{itemize}
@@ -1537,14 +1633,7 @@ Once we've built a machine learning model, after sometime, the model's performan
     \end{itemize}
 \end{itemize}
 
-\section{Conclusion}
-\begin{itemize}
-    \item General Scheme: The proposed monitoring scheme is flexible and can be applied to both batch and non-batch models.
-    \item Next Steps: Implement the monitoring pipeline and create dashboards to ensure the health and performance of machine learning models in production.
-\end{itemize}
-
-
-
+\section{ML Monitoring Environment Setup}
 
 
 \end{document}
