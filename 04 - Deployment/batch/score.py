@@ -1,5 +1,4 @@
 
-import os
 import sys
 import boto3
 import uuid
@@ -9,7 +8,6 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.pipeline import make_pipeline
-
 
 # Initialize a boto3 session with specific AWS credentials
 session = boto3.Session(
@@ -25,7 +23,6 @@ boto3.setup_default_session(
     region_name=''
 )
 
-
 def read_dataframe(filename: str):
     df = pd.read_parquet(filename)
 
@@ -34,7 +31,6 @@ def read_dataframe(filename: str):
     df = df[(df.duration >= 1) & (df.duration <= 60)]
     df['ride_id'] = generate_uuids(len(df))
     return df
-
 
 def prepare_dictionaries(df: pd.DataFrame):
     categorical = ['PULocationID', 'DOLocationID']
@@ -52,7 +48,6 @@ def generate_uuids(n):
     for i in range(n):
         ride_ids.append(str(uuid.uuid4()))
     return ride_ids
-
 
 def load_model(run_id):
     logged_model = f's3://mlflow-artifacts-remote-pythondance/1/{run_id}/artifacts/model'
@@ -99,6 +94,7 @@ def run():
         run_id=RUN_ID, 
         output_file=output_file
         )
+    
     
 if __name__ == '__main__':
     run()
