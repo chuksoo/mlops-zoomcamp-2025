@@ -1634,6 +1634,178 @@ For batch models, use BI tools like Tableau or Looker for initial analysis. For 
 \end{itemize}
 
 \section{ML Monitoring Environment Setup}
+To setup environment for monitoring for our project, in the project folder,
+\begin{lstlisting}[language=python, numbers=none]
+ mkdir taxi-monitoring
+\end{lstlisting}
+Change directory into the ``taxi-monitoring'' folder and create a virtual environment.
+\begin{lstlisting}[language=python, numbers=none]
+conda create -n monitoring-env python=3.11
+\end{lstlisting}
+
+Next we activate the virtual environment
+\begin{lstlisting}[language=python, numbers=none]
+conda activate monitoring-env 
+\end{lstlisting}
+
+Create a \smtt{requirements.txt} file to list all the packages and install it. Once the requirements have been listed in the requirement file, install it in the terminal with:
+\begin{lstlisting}[language=python, numbers=none]
+pip install -r requirements.txt
+\end{lstlisting}
+
+Next we create a docker compose file. Docker compose is a tool that allows us to build multi-container docker application.  Docker compose ``yaml'' file is a file where you can list all your services.  The docker compose file is created below.
+\begin{lstlisting}[language=python, numbers=none]
+version: '3.7'
+
+volumes: 
+	grafana_data: {}
+
+networks:
+	front-tier:
+	back-tier:
+	.....
+
+\end{lstlisting}
+
+In the ``taxi-monitoring'' directory, create a ``config'' folder and a ``grafana\_datasources.yaml'' file. Docker compose is going to allow us to create all the services. Run the docker compose build command using:
+\begin{lstlisting}[language=python, numbers=none]
+docker-compose up --build
+\end{lstlisting}
+
+If you get the error below when building the docker file,  find and kill the process using the port. 
+
+\begin{lstlisting}[language=python, numbers=none]
+Error response from daemon: Ports are not available: exposing port TCP 0.0.0.0:5432 -> 0.0.0.0:0: listen tcp 0.0.0.0:5432: bind: address already in use
+\end{lstlisting}
+
+Run the following one after the other
+\begin{lstlisting}[language=python, numbers=none]
+sudo lsof -i :5432
+sudo kill -9 <PID>
+\end{lstlisting}
+
+Once docker compose is up and running, we can try to access grafana using \smtt{localhost:3000/login}, default username and password is \smtt{admin}.  We can access adminer at \smtt{http://localhost:8080/}. We have successfully created our working environment and made sure our services starts. Once the service starts, we can prepare reference data and model. 
+
+\section{Evidently Metric Calculation}
+To perform metric calculation in Evidently, we need to create a report. A report is an object which allows us to select what metrics we want to calculate and group them all together. The code snippet provided defines a \texttt{Report} object with specific metrics to evaluate in a dataset. Below is a detailed breakdown of what each part does:
+
+\subsection*{Code Snippet}
+\begin{lstlisting}[language=Python]
+report = Report(metrics=[
+    ColumnDriftMetric(column_name='prediction'),
+    DatasetDriftMetric(),
+    DatasetMissingValuesMetric()
+])
+\end{lstlisting}
+
+\subsection*{Explanation}
+\begin{itemize}
+    \item \texttt{report = Report(metrics=[...])}: This initializes a \texttt{Report} object with a list of metrics that will be calculated when the report is generated.
+    
+    \item \texttt{ColumnDriftMetric(column\_name='prediction')}: This metric checks for drift in the specified column, which is \texttt{'prediction'} in this case. Drift indicates that the statistical properties of a column have changed over time, which can signal issues such as changes in the underlying data distribution or model degradation.
+    
+    \item \texttt{DatasetDriftMetric()}: This metric evaluates the entire dataset to detect drift. It assesses if the overall data distribution has changed, which can affect the performance and reliability of models trained on the dataset.
+    
+    \item \texttt{DatasetMissingValuesMetric()}: This metric checks for missing values in the dataset. It identifies the presence and possibly the extent of missing data, which is crucial for maintaining data quality and ensuring the accuracy of analysis and model training.
+\end{itemize}
+
+\subsection*{Example Usage}
+This setup is typically used in monitoring data quality and model performance over time. Here is how you might use it:
+
+\subsection*{1. Initialize the Report}
+\begin{lstlisting}[language=Python]
+report = Report(metrics=[
+    ColumnDriftMetric(column_name='prediction'),
+    DatasetDriftMetric(),
+    DatasetMissingValuesMetric()
+])
+\end{lstlisting}
+
+\subsection*{2. Generate the Report with Data}
+Assuming you have current and reference datasets (for drift comparison):
+\begin{lstlisting}[language=Python]
+current_data = ...  # Load or define your current dataset
+reference_data = ...  # Load or define your reference dataset
+
+report.run(current_data=current_data, reference_data=reference_data)
+\end{lstlisting}
+
+\subsection*{3. View the Report}
+After running the report, you can inspect the results:
+\begin{lstlisting}[language=Python]
+print(report.show())
+\end{lstlisting}
+
+\subsection*{Practical Application}
+In a real-world scenario, you would use this type of report to continuously monitor your data pipeline. For instance:
+\begin{itemize}
+    \item \textbf{Column Drift Monitoring}: Ensuring that your model predictions remain consistent over time and are not being affected by unforeseen changes in data distribution.
+    \item \textbf{Dataset Drift Monitoring}: Detecting shifts in your overall data, which could indicate changes in user behavior, data collection issues, or other external factors.
+    \item \textbf{Missing Values Monitoring}: Keeping track of missing data to maintain data integrity and avoid biases in your analysis or model training.
+\end{itemize}
+
+We can create the report object as a python dictionary. This allows us to derive any value for the dictionary.We could derive information such as the prediction drift,  number of drifted columns, and about the shares of missing value. By regularly generating and reviewing such reports, you can proactively address data quality issues and maintain the performance and reliability of your data-driven applications.
+
+\section{Evidently Monitoring Dashboard}
+An example of the Evidently monitoring dashboard can be found \href{https://github.com/chuksoo/mlops-zoomcamp-2024/blob/main/05%20-%20Monitoring/taxi-monitoring/baseline_model_nyc_taxi_data.ipynb}{here}. Once the dashboard have been created in jupyter notebook, we can test iot in the terminal by calling Evidently UI.  In the ``taxi-monitoring'' directory, run \smtt{evidently ui} which starts the monitoring service. You can copy the URL, and paste in the browser to see the project list.  We notice that we don't have any visible dashboard. In this case, we have to configure it using the code snippet below:
+
+\begin{lstlisting}[language=python, numbers=none]
+# configure the dashboard
+project.dashboard.add_panel(
+    DashboardPanelCounter(
+        filter=ReportFilter(metadata_values={}, tag_values=[]),
+        agg=CounterAgg.NONE,
+        title="NYC taxi data dashboard"
+    )
+)
+
+project.dashboard.add_panel(
+    DashboardPanelPlot(
+        filter=ReportFilter(metadata_values={}, tag_values=[]),
+        title="Inference Count",
+        values=[
+            PanelValue(
+                metric_id="DatasetSummaryMetric",
+                field_path="current.number_of_rows",
+                legend="count"
+            ),
+        ],
+        plot_type=PlotType.BAR,
+        size=WidgetSize.HALF,
+    ),
+)
+
+project.dashboard.add_panel(
+    DashboardPanelPlot(
+        filter=ReportFilter(metadata_values={}, tag_values=[]),
+        title="Number of Missing Values",
+        values=[
+            PanelValue(
+                metric_id="DatasetSummaryMetric",
+                field_path="current.number_of_missing_values",
+                legend="count"
+            ),
+        ],
+        plot_type=PlotType.LINE,
+        size=WidgetSize.HALF,
+    ),
+)
+
+project.save()
+\end{lstlisting}
+
+Once we've completed the configuration, we save and run it. We can go back to the monitoring service URL to see the dashboard.  Our dashboard looks like the figure below.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/evidently-dashboard.png}
+	\caption{Evidently Monitoring Dashboard}
+	\label{fig:13}
+\end{figure}
+\FloatBarrier
+With the dashboard, we can build pretty nice reports to monitor your data and models especially for batch models deployed in production very quickly.
+
+\section{Data Quality Monitoring}
+
 
 
 \end{document}
