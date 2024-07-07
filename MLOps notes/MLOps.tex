@@ -1805,8 +1805,110 @@ Once we've completed the configuration, we save and run it. We can go back to th
 With the dashboard, we can build pretty nice reports to monitor your data and models especially for batch models deployed in production very quickly.
 
 \section{Data Quality Monitoring}
+Here we describes ways to modify a script to create a data monitoring dashboard. 
+\subsubsection{Load Reference Data and Model}
+\begin{itemize}[noitemsep, topsep=0pt]
+\item Script now includes functions to load reference data and a model.
+\end{itemize}
+\subsubsection{Daily Data Processing}
+\begin{itemize}[noitemsep, topsep=0pt]
+\item We read all data initially.
+\item Simulates daily usage by processing data in 10-second intervals.
+\item Creates a current data set for each simulated day.
+\end{itemize}
+\subsubsection{Report Generation}
+\begin{itemize}[noitemsep, topsep=0pt]
+\item Existing report generation code is reused to transform data.
+\item Script calculates metrics like prediction drift, drifted columns, and missing value share.
+\end{itemize}
+\subsubsection{Database Update}
+\begin{itemize}[noitemsep, topsep=0pt]
+\item We then insert calculated metrics into a database table.
+\end{itemize}
+We can also convert the script into a Prefect pipeline using decorators. In data quality monitoring, we used Grafana to visualize the metrics. We populate the dashboard with data for prediction drift, number of drifted columns, and missing value share.
 
+\section{Saving and Reusing Grafana Dashboards}
+In order to save and reuse Grafana dashboards, first we create a configuration file, update docker compose, and configure the dashboard.
 
+\textbf{Steps:}
+\begin{enumerate}
+\item \textbf{Configuration Files:}
+	\begin{itemize}[noitemsep, topsep=0pt]
+   	\item Create a YAML file (\smtt{grafana\_dashboards.yaml}) in the \textbf{\smtt{config}} directory to specify general dashboard settings.
+   	\item Create a directory named \textbf{\smtt{dashboard}} to store individual dashboard configurations.
+     	\item Inside \textbf{\smtt{dashboard}}, create a JSON file (e.g., \smtt{data\_drift.json}) for each specific dashboard. This file will store detailed configurations for that dashboard.
+	\end{itemize}
+\item \textbf{Update Docker Compose:}
+	\begin{itemize}[noitemsep, topsep=0pt]
+   	\item Modify the \texttt{volumes} section of your Grafana service in \smtt{docker-compose.yml}.
+   	\item Add volume mounts for the \smtt{grafana\_dashboards.yaml} file and the \textbf{\smtt{dashboard}} directory. This allows Grafana to access the configuration files during startup.
+\begin{lstlisting}[language=python, numbers=none]
+    volumes:
+      - ./config/grafana_dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
+      - ./dashboards:/opt/grafana/dashboards
+\end{lstlisting}
+	\end{itemize}
+\item \textbf{Configure Dashboard JSON:}
+	\begin{itemize}[noitemsep, topsep=0pt]
+   	\item In Grafana, access the settings for your desired dashboard.
+   	\item Export the dashboard configuration as a JSON model.
+   	\item Paste the exported JSON code into the corresponding JSON file (e.g., \smtt{data\_drift.json}) within the \textbf{\smtt{dashboard}} directory.
+	\end{itemize}
+\end{enumerate}
+
+Once, we've edited the code, we then build docker-compose. In the terminal, run \smtt{docker-compose up --build}. In a second terminal,  run \smtt{python evidently\_metrics\_calculation.py}. Once docker is up and running, check the dashboard by login into Grafana at \smtt{http://localhost:3000}. We should see a dashboard like \textbf{Fig. \ref{fig:15}}.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/grafana-dashboard.png}
+	\caption{Grafana Saved Dashboard}
+	\label{fig:15}
+\end{figure}
+\FloatBarrier
+
+\section{Debugging with Evidently Library}
+This document outlines the debugging process using Evidently library for data and model issues identified through monitoring.
+
+\subsection{Benefits of Evidently}
+
+Evidently offers various functionalities for data monitoring and debugging:
+
+\begin{enumerate}
+  \item **Visual Reports:** Generate visual dashboards to understand data drift and other issues.
+  \item **Test Suites:** Provide pre-defined tests to check for specific data or model problems.
+  \item **Detailed Analysis:** Offer in-depth analysis of data changes and potential causes.
+\end{enumerate}
+
+\subsection{Using Evidently for Debugging}
+
+The following steps demonstrate how to use Evidently for debugging:
+
+\begin{enumerate}
+  \item **Import Libraries:** Import necessary libraries like `evidently` for reports and test suites, specific metric libraries, and test preset libraries.
+
+  \item **Load Data:** Load separate reference data (used for training) and current data.
+
+  \item **Load Model:** Load the model you intend to debug.
+
+  \item **Prepare Data:** Select the problematic part of the current data for analysis.
+
+  \item \textbf{Using Test Suites:}
+    \begin{itemize}[noitemsep, topsep=0pt]
+      \item Define `column\_mapping` to specify feature mapping between reference and current data.
+      \item Exclude target columns if not relevant (e.g., `Target=None`).
+      \item Use `evidently.test\_presets.DataDriftPreset` for data drift tests.
+      \item Run the test suite with `suite.run(reference\_data, current\_data, column\_mapping)`.
+      \item Visualize results using `suite.show(inline=True)`.
+    \end{itemize}
+
+  \item \textbf{Using Reports:}
+    \begin{itemize}[noitemsep, topsep=0pt]
+      \item Create a report object using `evidently.Report` and specify metrics (e.g., `evidently.Report(evidently.MetricPreset.DATA\_DRIFT)`).
+      \item Run the report with `report.run(reference\_data, current\_data, column\_mapping)`.
+      \item Visualize results using `report.show(inline=True)` or save as HTML for offline viewing (`report.save\_html("report.html")`).
+    \end{itemize}
+\end{enumerate}
+
+Evidently's test suites and reports provide valuable tools for debugging data and model issues. They offer clear visualizations and detailed analysis to identify and address data drift and other performance problems.
 
 \end{document}
 
