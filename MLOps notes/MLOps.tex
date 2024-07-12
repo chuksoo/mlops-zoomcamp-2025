@@ -1690,7 +1690,7 @@ Once docker compose is up and running, we can try to access grafana using \smtt{
 To perform metric calculation in Evidently, we need to create a report. A report is an object which allows us to select what metrics we want to calculate and group them all together. The code snippet provided defines a \texttt{Report} object with specific metrics to evaluate in a dataset. Below is a detailed breakdown of what each part does:
 
 \subsection*{Code Snippet}
-\begin{lstlisting}[language=Python]
+\begin{lstlisting}[language=python, numbers=none]
 report = Report(metrics=[
     ColumnDriftMetric(column_name='prediction'),
     DatasetDriftMetric(),
@@ -1713,7 +1713,7 @@ report = Report(metrics=[
 This setup is typically used in monitoring data quality and model performance over time. Here is how you might use it:
 
 \subsection*{1. Initialize the Report}
-\begin{lstlisting}[language=Python]
+\begin{lstlisting}[language=python, numbers=none]
 report = Report(metrics=[
     ColumnDriftMetric(column_name='prediction'),
     DatasetDriftMetric(),
@@ -1723,7 +1723,7 @@ report = Report(metrics=[
 
 \subsection*{2. Generate the Report with Data}
 Assuming you have current and reference datasets (for drift comparison):
-\begin{lstlisting}[language=Python]
+\begin{lstlisting}[language=python, numbers=none]
 current_data = ...  # Load or define your current dataset
 reference_data = ...  # Load or define your reference dataset
 
@@ -1732,7 +1732,7 @@ report.run(current_data=current_data, reference_data=reference_data)
 
 \subsection*{3. View the Report}
 After running the report, you can inspect the results:
-\begin{lstlisting}[language=Python]
+\begin{lstlisting}[language=python, numbers=none]
 print(report.show())
 \end{lstlisting}
 
@@ -1873,9 +1873,9 @@ This document outlines the debugging process using Evidently library for data an
 Evidently offers various functionalities for data monitoring and debugging:
 
 \begin{enumerate}
-  \item **Visual Reports:** Generate visual dashboards to understand data drift and other issues.
-  \item **Test Suites:** Provide pre-defined tests to check for specific data or model problems.
-  \item **Detailed Analysis:** Offer in-depth analysis of data changes and potential causes.
+  \item \textbf{Visual Reports:} Generate visual dashboards to understand data drift and other issues.
+  \item \textbf{Test Suites:} Provide pre-defined tests to check for specific data or model problems.
+  \item \textbf{Detailed Analysis:} Offer in-depth analysis of data changes and potential causes.
 \end{enumerate}
 
 \subsection{Using Evidently for Debugging}
@@ -1883,32 +1883,87 @@ Evidently offers various functionalities for data monitoring and debugging:
 The following steps demonstrate how to use Evidently for debugging:
 
 \begin{enumerate}
-  \item **Import Libraries:** Import necessary libraries like `evidently` for reports and test suites, specific metric libraries, and test preset libraries.
+  \item \textbf{Import Libraries:} Import necessary libraries like ``evidently'' for reports and test suites, specific metric libraries, and test preset libraries.
 
-  \item **Load Data:** Load separate reference data (used for training) and current data.
+  \item \textbf{Load Data:} Load separate reference data (used for training) and current data.
 
-  \item **Load Model:** Load the model you intend to debug.
+  \item \textbf{Load Model:} Load the model you intend to debug.
 
-  \item **Prepare Data:** Select the problematic part of the current data for analysis.
+  \item \textbf{Prepare Data:} Select the problematic part of the current data for analysis.
 
   \item \textbf{Using Test Suites:}
     \begin{itemize}[noitemsep, topsep=0pt]
-      \item Define `column\_mapping` to specify feature mapping between reference and current data.
-      \item Exclude target columns if not relevant (e.g., `Target=None`).
-      \item Use `evidently.test\_presets.DataDriftPreset` for data drift tests.
-      \item Run the test suite with `suite.run(reference\_data, current\_data, column\_mapping)`.
-      \item Visualize results using `suite.show(inline=True)`.
+      \item Define ``column\_mappin'' to specify feature mapping between reference and current data.
+      \item Exclude target columns if not relevant (e.g., ``Target=None'').
+      \item Use \smtt{evidently.test\_presets.DataDriftPreset} for data drift tests.
+      \item Run the test suite with \smtt{suite.run(reference\_data, current\_data, column\_mapping)}.
+      \item Visualize results using \smtt{suite.show(inline=True)}.
     \end{itemize}
 
   \item \textbf{Using Reports:}
     \begin{itemize}[noitemsep, topsep=0pt]
-      \item Create a report object using `evidently.Report` and specify metrics (e.g., `evidently.Report(evidently.MetricPreset.DATA\_DRIFT)`).
-      \item Run the report with `report.run(reference\_data, current\_data, column\_mapping)`.
-      \item Visualize results using `report.show(inline=True)` or save as HTML for offline viewing (`report.save\_html("report.html")`).
+      \item Create a report object using ``evidently.Report'' and specify metrics (e.g., \smtt{evidently.Report(evidently.MetricPreset.DATA\_DRIFT)}).
+      \item Run the report with \smtt{report.run(reference\_data, current\_data, column\_mapping)}.
+      \item Visualize results using ``report.show(inline=True)'' or save as HTML for offline viewing (\smtt{report.save\_html(``report.html'')}).
     \end{itemize}
 \end{enumerate}
 
 Evidently's test suites and reports provide valuable tools for debugging data and model issues. They offer clear visualizations and detailed analysis to identify and address data drift and other performance problems.
+
+%--------------- Chapter 6: Best Practices -----------%
+\chapter{Best Practices} \label{ch:6}
+
+\section{Testing Python Code with pytest}
+In this section, we covers adding unit tests to a Lambda function that processes a stream of events, extracts features, and makes predictions. To perform unit test, we need to set up the testing environment. 
+\subsection*{Setting Up the Environment}
+To test python code with pytest, first the code for the Lambda function is placed in a separate folder named ``code''. A new folder named ``tests'' is created to store the unit tests. To setup the environment,  python environment is set up using ``pipenv''. This installs dependencies from the ``Pipfile.lock'' file.
+\begin{lstlisting}[language=python, numbers=none]
+pipenv install
+\end{lstlisting}
+
+The pytest library is installed for writing tests. We can install that using:
+\begin{lstlisting}[language=python, numbers=none]
+pipenv install --dev pytest
+\end{lstlisting}
+
+We need to configure VS Code to recognize the Python environment so we can run test from it.  To select the right python interpreter for our test to run locally, we can run:
+\begin{lstlisting}[language=python, numbers=none]
+pipenv --venv
+\end{lstlisting}
+This would output something like:
+\begin{lstlisting}[language=python, numbers=none]
+/Users/chuksokoli/.local/share/virtualenvs/code-dGaX0KrP
+\end{lstlisting}
+We can now select this environment using \smtt{SHIFT + CTRL + P} for local testing. To ensure ``pytest'' runs in the virtual environment, run \smtt{pipenv shell}. Confirm we are testing in the virtual environment by running \smtt{which pytest}. 
+
+\subsection*{Configuring Python Tests}
+We can configure through the ``Testing'' icon in VSCode. You have to be on the ``code'' directory. We select a testing framework to enable and chose the ``tests'' folder as the directory containing the tests. We create a docker file and build the docker image with \smtt{docker build -t stream-model-duration:v2 .}. Once the docker image have finished building, we can test this by running \smtt{python test\_docker.py}. The test should output predictions. 
+
+\subsection*{Running Unit Tests}
+To run unit test, select the ``Testing'' icon on VSCode and run test as shown in \textbf{Fig. \ref{fig:16}}.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/unit-test-on-vscode.png}
+	\caption{Running Pytest on VSCode}
+	\label{fig:16}
+\end{figure}
+\FloatBarrier
+
+To perform unit test on terminal, run \smtt{pipenv run pytest tests/}. This should output the image in \textbf{Fig. \ref{fig:17}} showing that two test ran in the ``tests'' folder and the two test passed.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/unit-test-on-terminal.png}
+	\caption{Running Pytest on terminal}
+	\label{fig:17}
+\end{figure}
+\FloatBarrier
+
+\section{Integration tests with docker-compose}
+
+
+
+
 
 \end{document}
 
