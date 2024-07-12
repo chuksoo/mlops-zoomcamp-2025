@@ -8,8 +8,6 @@ import mlflow
 kinesis_client = boto3.client('kinesis')
 
 PREDICTIONS_STREAM_NAME = os.getenv('PREDICTIONS_STREAM_NAME', 'ride_predictions')
-
-
 RUN_ID = os.getenv('RUN_ID')
 
 logged_model = f's3://mlflow-models-alexey/1/{RUN_ID}/artifacts/model'
