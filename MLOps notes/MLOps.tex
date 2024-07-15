@@ -1960,7 +1960,19 @@ To perform unit test on terminal, run \smtt{pipenv run pytest tests/}. This shou
 \FloatBarrier
 
 \section{Integration tests with docker-compose}
+To perform integration test with docker-compose, we first build the docker image
+\begin{lstlisting}[language=python, numbers=none]
+docker build -t stream-model-duration:v2 .
 
+docker run -it --rm \
+    -p 8080:8080 \
+    -e PREDICTIONS_STREAM_NAME="ride_predictions" \
+    -e RUN_ID="e1efc53e9bd149078b0c12aeaa6365df" \
+    -e TEST_RUN="True" \
+    -e AWS_DEFAULT_REGION="eu-west-1" \
+    stream-model-duration:v2
+\end{lstlisting}
+From a different terminal, we run \smtt{python test\_docker.py}. This runs the fetches the model from S3, runs the model, decode the result and test the output.
 
 
 
