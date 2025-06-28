@@ -119,6 +119,7 @@ The three-phase approach to implementing machine learning (ML) solutions are:
 \end{itemize}
 These phases are interconnected, with design decisions influencing experimentation and deployment options.
 
+% Fig 1.1
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth]{Images/Iterative MLOps.png}
@@ -136,10 +137,12 @@ MLOps leverages various tools to simplify the machine learning lifecycle.
 \item \textbf{Cloud computing platforms} like AWS, Azure and IBM Cloud provide scalable infrastructure for running and managing ML workloads.
 \end{itemize}
 
-
+%------------------- 1.2.	Environment Preparation  -----------------%
 \section{Environment Preparation}
 \subsection{Configuring Environment with GitHub Codespaces}
 To configure the environment using GitHub codespaces, first create a repository on GitHub, give the repository a name, add a ``README'' file and a \texttt{.gitignore} template, choose a license and create the repo. In the repo main page, click on \texttt{Create codespace on main} as shown in \textbf{Fig. \ref{fig:2}}.
+
+% Fig 1.2
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.5\textwidth]{Images/Codespaces.png}
@@ -148,7 +151,18 @@ To configure the environment using GitHub codespaces, first create a repository 
 \end{figure}
 \FloatBarrier
 
-A connection to Visual Studio Code can be made through Codespaces.  Start a new terminal, change directory to the workspaces and download and install Anaconda distribution of python in it using the step below.
+We can then work directly from the browser. Working from the browser is not so convenient since we need to run MLflow by forwarding port and connect to the services. From the Codespace interface, we can \texttt{Open Codespaces in VS Code Desktop}.  This open codespaces locally through Visual Studio Code without any latency.
+
+% Fig 1.3
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Images/github-codespaces.png}
+	\caption{VS Code via GitHub Codespaces}
+	\label{fig:3}
+\end{figure}
+\FloatBarrier
+
+In the new Visual Studio Code through Codespaces, we can start a new terminal, change directory to the workspaces and download and install Anaconda distribution of python in it using the step below.
  \begin{itemize}
 \item \textbf{Step 1}: Download and install the Anaconda distribution of Python 
 \begin{lstlisting}[language=python, numbers=none]
@@ -159,14 +173,19 @@ wget https://repo.anaconda.com/archive/Anaconda3-2022.05-Linux-x86_64.sh
 bash Anaconda3-2022.05-Linux-x86_64.sh
 \end{lstlisting}
 
-After installing Anaconda, initialize it. In a new terminal, confirm that Anaconda is running in the workspaces
+If Anaconda3 is already installed and give a ``File or directory already exists'', you can update the existing installation by running:
 \begin{lstlisting}[language=python, numbers=none]
-(base) @your_username -> /workspaces/mlops-zoomcamp-2024 (main) $ which python
+bash Anaconda3-2022.05-Linux-x86_64.sh -u -p /home/codespace/anaconda3
+\end{lstlisting}
+
+After installing Anaconda, initialize it. To open a new terminal, type \texttt{bash} and press ENTER. In a new terminal, confirm that Anaconda is running in the workspaces
+\begin{lstlisting}[language=python, numbers=none]
+(base) @your_username -> /workspaces/mlops-zoomcamp-2025 (main) $ which python
 /home/codespace/anaconda3/bin/python
 \end{lstlisting}
 \item \textbf{Step 3}: Make sure to install \texttt{pyarrow} in order to download parquet file
 \begin{lstlisting}[language=python, numbers=none]
-!pip install pyarrow
+pip install pyarrow
 \end{lstlisting}
 \item \textbf{Step 4}: Run jupyter notebook
 \begin{lstlisting}[language=python, numbers=none]
@@ -185,6 +204,13 @@ wget https://repo.anaconda.com/archive/Anaconda3-2022.05-Linux-x86_64.sh
 bash Anaconda3-2022.05-Linux-x86_64.sh
 \end{lstlisting}
 \item \textbf{Step 2}: Update existing packages
+
+If working with Amazon Linux distribution, update packages using:
+\begin{lstlisting}[language=python, numbers=none]
+sudo yum update
+\end{lstlisting}
+
+If using an Ubuntu linux distribution, use:
 \begin{lstlisting}[language=python, numbers=none]
 sudo apt update
 \end{lstlisting}
@@ -229,6 +255,7 @@ docker run hello-world
 \end{lstlisting}
 \end{itemize}
 
+%------------------- 1.3.	Model Development  -----------------%
 \section{Model Development}
 \subsection{Taxi trip prediction with machine learning}
     \begin{example}[frametitle=\extitle{TLC Trip Prediction}]
@@ -241,6 +268,7 @@ We can download parquet file using:
 !wget https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2021-01.parquet
 \end{lstlisting}
 
+%------------------- 1.4.	MLOps Maturity Model  -----------------%
 \section{MLOps Maturity Model}
 The MLOps maturity model helps clarify the Development Operations (DevOps) principles and practices necessary to run a successful MLOps environment.  The maturity is the extent to which MLOps is implemented in a team. The MLOps maturity model encompasses five levels of technical capability.
 
@@ -304,9 +332,9 @@ Level & Description                     & Highlights                            
 
 \inspiration{MLOps is critical for the success of AI projects because it allows teams to iterate quickly and deploy machine learning models reliably and at scale.}{Andrew Ng}{}
 
+%------------------- 2.1.	Introduction to Experiment Tracking  -----------------%
 \section{Introduction to Experiment Tracking}
-
- \begin{funfact}[frametitle=\facttitlep{Fun Fact}{MLflow}]
+\begin{funfact}[frametitle=\facttitlep{Fun Fact}{MLflow}]
 MLflow is an open-source platform that helps manage the end-to-end machine learning lifecycle. It provides a set of tools to streamline and automate various stages of the machine learning process, from experimentation to deployment. 
 \end{funfact}
 
@@ -406,7 +434,7 @@ MLflow is designed to scale with your needs:
 
 By integrating MLflow into your machine learning workflow, you can enhance the management, reproducibility, and deployment of your experiments. It provides a comprehensive set of tools that streamline the entire lifecycle of machine learning models, making it easier to track, reproduce, and deploy models at scale.
 
-
+%------------------- 2.2.	Experiment tracking with MLflow  -----------------%
 \section{Experiment tracking with MLflow}
 To start experiment tracking, we need to create a conda environment for tracking experiment and activate it.
 \begin{lstlisting}[language=python, numbers=none]
